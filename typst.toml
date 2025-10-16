@@ -8,5 +8,5 @@ description = "A package for drawing beautiful tidy tree easily"
 repository = "https://github.com/Vertsineu/typst-tidy-tree"
 keywords = ["tidy", "tree"]
 categories = ["visualization", "utility"]
-exclude = ["docs"]
+exclude = ["docs/"]
 compiler = "0.13.1"
