@@ -2,6 +2,8 @@
 
 A Typst package for drawing beautiful tidy tree easily
 
+This package use [fletcher](https://typst.app/universe/package/fletcher) to render and customize nodes and edges
+
 ## Usage
 
 ```typ
