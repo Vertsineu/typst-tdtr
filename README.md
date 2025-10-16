@@ -14,17 +14,17 @@ A Typst package for drawing beautiful tidy tree easily
 
 ```typ
 #tidy-tree-graph([
-- $integral_0^infinity e^(-x) dif x = 1$
+  - $integral_0^infinity e^(-x) dif x = 1$
     - `int main() { return 0; }`
-    - Hello
+      - Hello
         - This
         - Continue
         - Hello World
-    - This
+      - This
     - _literally_
-    - Like
+      - Like
     - *day*
-    - tomorrow $1$
+      - tomorrow $1$
 ])
 ```
 
