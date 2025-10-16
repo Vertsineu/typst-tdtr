@@ -115,10 +115,10 @@
     } else if type(tree) == array {
       tree.enumerate().map(((i, child)) => {
         let indices = indices + (i, )
-        flatten-tree(child, indices: indices)
+        ((title: child, indices: indices), )
       }).flatten()
     } else {
-      ((title: tree, indices: indices), )
+      ((title: tree, indices: indices + (0, )), )
     }
   }
   let tree = flatten-tree(tree)
