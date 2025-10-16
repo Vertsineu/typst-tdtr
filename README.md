@@ -1,4 +1,4 @@
-# tidy-tree
+# tdtr
 
 A Typst package for drawing beautiful tidy tree easily
 

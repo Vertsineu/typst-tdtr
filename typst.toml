@@ -1,5 +1,5 @@
 [package]
-name = "tidy-tree"
+name = "tdtr"
 version = "0.1.0"
 entrypoint = "lib.typ"
 authors = ["Vertsineu"]
