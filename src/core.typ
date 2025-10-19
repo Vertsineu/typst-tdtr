@@ -482,6 +482,7 @@
   default-draw-node: (name, label, (i, j, k, x)) => fletcher.node((x, i), [#label], name: name),
   /// default function for drawing an edge
   default-draw-edge: ((from-name, from-label, (i1, j1, k1, x1)), (to-name, to-label, (i2, j2, k2, x2))) => fletcher.edge(from-name, to-name, "-|>"),
+  reversed-draw-edge: ((from-name, from-label, (i1, j1, k1, x1)), (to-name, to-label, (i2, j2, k2, x2))) => fletcher.edge(to-name, from-name, "-|>"),
   /// draw an edge with horizontal-vertical style
   horizontal-vertical-draw-edge: ((from-name, from-label, (i1, j1, k1, x1)), (to-name, to-label, (i2, j2, k2, x2))) => {
     let from-anchor = (name: from-name, anchor: "south")
@@ -498,7 +499,7 @@
         "-|>"
       )
     }
-  }
+  },
 )
 
 /*
