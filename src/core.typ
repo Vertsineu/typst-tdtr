@@ -568,7 +568,7 @@
     node-stroke: node-stroke,
     spacing: spacing,
     node-inset: node-inset,
-    edge-corner-radius: none,
+    edge-corner-radius: edge-corner-radius,
     ..args,
 
     // Nodes
