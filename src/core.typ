@@ -156,11 +156,15 @@
       return (title: body, children: ())
     }
 
-    let is-item(child) = child.func() == std.list.item or child.func() == std.enum.item
+    let is-list-item(child) = child.func() == std.list.item
+    let is-enum-item(child) = child.func() == std.enum.item
     body.children
       .fold(([], ()), ((title, children), child) => {
-        if is-item(child) {
+        if is-list-item(child) {
           (title, children + (collect-tree(child.body), ))
+        } else if is-enum-item(child) {
+          // leave out enum titles since they are for edge labels
+          (title, children)
         } else {
           (title + child, children)
         }
@@ -252,6 +256,55 @@
   }
 
   tree
+}
+
+#let tidy-tree-edges-empty(tree) = {
+  tree.map((level) => level.map((children) => children.map(_ => none)))
+}
+
+#let tidy-tree-edges-from-list(body) = {
+  // cast a list or enum to a tree structure
+  let collect-tree-edges(body, title: none) = {
+    if not body.has("children") {
+      return (title: title, children: ())
+    }
+
+    let is-list-item(child) = child.func() == std.list.item
+    let is-enum-item(child) = child.func() == std.enum.item
+    body.children
+      .fold(((), none), ((children, title), child) => {
+        if is-list-item(child) {
+          // apply edge label from the nearest enum item
+          (children + (collect-tree-edges(child.body, title: title), ), none)
+        } else if is-enum-item(child) {
+          // save enum title as edge label
+          (children, child.body)
+        } else {
+          // leave out other texts since they are for node titles
+          (children, title)
+        }
+      })
+      .reduce((children, _, ) => (title: title, children: children))
+  }
+
+  let tree-edges = collect-tree-edges(body)
+
+  // flatten the tree structure to an array with indices
+  let flatten-tree-edges(tree, indices: ()) = {
+    if (indices.len() != 0) {
+      ((title: tree.title, indices: indices, ),)
+    }
+    tree.children.enumerate()
+      .map(((i, child)) => 
+        flatten-tree-edges(child, indices: indices + (i, )))
+      .flatten()
+  }
+  let tree-edges = flatten-tree-edges(tree-edges)
+
+  // cast the flattened tree to three-dimensional array
+  let tree-edges = tidy-tree-from-array-with-indices(tree-edges)
+  
+  tree-edges
 }
 
 /*
@@ -430,7 +483,7 @@
   - output:
     - `ret`: an array of elements for drawing a tidy tree
 */
-#let tidy-tree-elements(tree, xs, draw-node, draw-edge, compact: false) = {
+#let tidy-tree-elements(tree, xs, tree-edges, draw-node, draw-edge, compact: false) = {
   let elements = ()
   let parents = (((none, none), none), ) * tree.at(0).len() // labels of parent nodes for current level
   let label-count = 0
@@ -442,6 +495,7 @@
     for (j, children) in level.enumerate() {
       let ((parent-label, parent), parent-position) = parents.at(j)
       for (k, child) in children.enumerate() {
+        let child-edge = tree-edges.at(i).at(j).at(k)
         let child-label = new-label(label-count); label-count += 1
         let x = xs.at(i).at(j).at(k)
         let child-position = (i, j, k, x)
@@ -464,7 +518,7 @@
         )
         if (parent-label != none) {
           elements.push(
-            draw-edge((parent-label, parent, parent-position), (child-label, child, child-position))
+            draw-edge((parent-label, parent, parent-position), (child-label, child, child-position), child-edge)
           )
         }
         parents.push(((child-label, child), (i, j, k, x)))
@@ -479,27 +533,42 @@
 /// pre-defined drawing functions for tidy tree
 #let tidy-tree-draws = (
   /// default function for drawing a node
-  default-draw-node: (name, label, (i, j, k, x)) => fletcher.node((x, i), [#label], name: name, shape: rect),
+  default-draw-node: (name, label, (i, j, k, x)) => 
+    fletcher.node((x, i), [#label], name: name, shape: rect),
   /// draw a node as a circle
-  circle-draw-node: (name, label, (i, j, k, x)) => fletcher.node((x, i), [#label], name: name, shape: circle),
+  circle-draw-node: (name, label, (i, j, k, x)) => 
+    fletcher.node((x, i), [#label], name: name, shape: circle),
   /// default function for drawing an edge
-  default-draw-edge: ((from-name, from-label, (i1, j1, k1, x1)), (to-name, to-label, (i2, j2, k2, x2))) => fletcher.edge(from-name, to-name, "-|>"),
+  default-draw-edge: ((from-name, from-label, (i1, j1, k1, x1)), (to-name, to-label, (i2, j2, k2, x2)), edge-label) => {
+    if edge-label == none {
+      fletcher.edge(from-name, to-name, "-|>")
+    } else {
+      fletcher.edge(from-name, to-name, "-|>", box(fill: white, inset: 2pt)[#edge-label], label-sep: 0pt, label-anchor: "center")
+    }
+  },
   /// draw an edge in reversed direction
-  reversed-draw-edge: ((from-name, from-label, (i1, j1, k1, x1)), (to-name, to-label, (i2, j2, k2, x2))) => fletcher.edge(to-name, from-name, "-|>"),
+  reversed-draw-edge: ((from-name, from-label, (i1, j1, k1, x1)), (to-name, to-label, (i2, j2, k2, x2)), edge-label) => {
+    if edge-label == none {
+      fletcher.edge(to-name, from-name, "-|>")
+    } else {
+      fletcher.edge(to-name, from-name, "-|>", box(fill: white, inset: 2pt)[#edge-label], label-sep: 0pt, label-anchor: "center")
+    }
+  },
   /// draw an edge with horizontal-vertical style
-  horizontal-vertical-draw-edge: ((from-name, from-label, (i1, j1, k1, x1)), (to-name, to-label, (i2, j2, k2, x2))) => {
+  horizontal-vertical-draw-edge: ((from-name, from-label, (i1, j1, k1, x1)), (to-name, to-label, (i2, j2, k2, x2)), edge-label) => {
     let from-anchor = (name: from-name, anchor: "south")
     let to-anchor = (name: to-name, anchor: "north")
     let middle-anchor = (from-anchor, 50%, to-anchor)
     if x1 == x2 {
-      fletcher.edge(from-anchor, to-anchor, "-|>")
+      fletcher.edge(from-anchor, to-anchor, "-|>", edge-label)
     } else {
       fletcher.edge(
         from-anchor,
         ((), "|-", middle-anchor),
         ((), "-|", to-anchor),
         to-anchor,
-        "-|>"
+        "-|>",
+        edge-label
       )
     }
   },
@@ -561,10 +630,19 @@
   }
   // cast a simplified tree into a normalized tree
   let tree = tidy-tree-normalize(tree)
+
+  // collect labels of edges if specified
+  let tree-edges = if type(body) == content {
+    tidy-tree-edges-from-list(body)
+  } else {
+    // not supported yet for other types
+    tidy-tree-edges-empty(tree)
+  }
+
   // calculate the horizontal axis position of every node
   let (xs, _) = tidy-tree-xs(tree, min-gap: min-gap)
   // generate elements
-  let elements = tidy-tree-elements(tree, xs, draw-node, draw-edge, compact: compact)
+  let elements = tidy-tree-elements(tree, xs, tree-edges, draw-node, draw-edge, compact: compact)
 
   set text(size: text-size)
   fletcher.diagram(
