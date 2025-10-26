@@ -84,12 +84,12 @@
         ```
         ```yaml
           Hello:
-            - World:
+            World:
                 - How
                 - are
                 - you
-            - !
-            - Like you:
+            "!":
+            Like you:
                 - doing
                 - today
         ```
