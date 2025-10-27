@@ -1,9 +1,9 @@
-#import "@preview/tdtr:0.1.0" : *
+#import "@preview/tdtr:0.2.0": *
 
 #set page(height: auto, width: auto, margin: 1em)
 
 #tidy-tree-graph(
-  draw-edge: tidy-tree-draws.horizontal-vertical-draw-edge
+  draw-edge: tidy-tree-draws.horizontal-vertical-draw-edge,
 )[
   - Hello
     - World
@@ -26,7 +26,7 @@
       - People
     - are
       - Hello
-          - World
+        - World
         - Day
           - Hello
           - World
