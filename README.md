@@ -12,7 +12,7 @@ This package use [fletcher](https://typst.app/universe/package/fletcher) to rend
 
 ### from list
 
-![easy](docs/example-easy.svg)
+![basic](docs/1-basic-tree.svg)
 
 ```typ
 #tidy-tree-graph(compact: true)[
@@ -30,7 +30,50 @@ This package use [fletcher](https://typst.app/universe/package/fletcher) to rend
 ]
 ```
 
-![hard](docs/example-hard.svg)
+![SLR](docs/2-SLR-analysis.svg)
+
+```typ
+#tidy-tree-graph(
+  spacing: (20pt, 20pt),
+  node-inset: 4pt
+)[
+  - $I_0$
+    + $E$
+    - $I_1$
+      + $+$
+      - $I_6$
+        + $T$
+        - $I_9$
+          + $F$
+          - $I_7$
+        + $F$
+        - $I_3$
+        + $a$
+        - $I_4$
+        + $b$
+        - $I_5$
+    + $T$
+    - $I_2$
+      + $F$
+      - $I_7$
+        + $*$
+        - $I_8$
+      + $a$
+      - $I_4$
+      + $b$
+      - $I_5$
+    + $F$
+    - $I_3$
+      + $*$
+      - $I_8$
+    + $a$
+    - $I_4$
+    + $b$
+    - $I_5$
+]
+```
+
+![large](docs/3-large-tree.svg)
 
 ```typ
 #tidy-tree-graph(
@@ -132,7 +175,7 @@ This package use [fletcher](https://typst.app/universe/package/fletcher) to rend
 }
 ```
 
-![json](docs/example-json.svg)
+![json](docs/4-json.svg)
 
 ```typ
 #tidy-tree-graph(json("test.json"))
@@ -154,7 +197,7 @@ app:
       secret: kdi90gs78a7fgasad123gf70aa7ds0
 ```
 
-![yaml](docs/example-yaml.svg)
+![yaml](docs/5-yaml.svg)
 
 ```typ
 #tidy-tree-graph(yaml("test.yaml"))

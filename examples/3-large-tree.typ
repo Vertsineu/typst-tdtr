@@ -1,59 +1,6 @@
 #import "@preview/tdtr:0.1.0" : *
 
-#set page(flipped: true)
-
-#tidy-tree-graph(compact: true)[
-  - $integral_0^infinity e^(-x) dif x = 1$
-    - `int main() { return 0; }`
-      - Hello
-        - This
-        - Continue
-        - Hello World
-      - This
-    - _literally_
-      - Like
-    - *day*
-      - tomorrow $1$
-]
-
-#tidy-tree-graph(
-  spacing: (20pt, 20pt),
-  node-inset: 4pt
-)[
-  - $I_0$
-    + $E$
-    - $I_1$
-      + $+$
-      - $I_6$
-        + $T$
-        - $I_9$
-          + $F$
-          - $I_7$
-        + $F$
-        - $I_3$
-        + $a$
-        - $I_4$
-        + $b$
-        - $I_5$
-    + $T$
-    - $I_2$
-      + $F$
-      - $I_7$
-        + $*$
-        - $I_8$
-      + $a$
-      - $I_4$
-      + $b$
-      - $I_5$
-    + $F$
-    - $I_3$
-      + $*$
-      - $I_8$
-    + $a$
-    - $I_4$
-    + $b$
-    - $I_5$
-]
+#set page(height: auto, width: auto, margin: 1em)
 
 #tidy-tree-graph(
   draw-edge: tidy-tree-draws.horizontal-vertical-draw-edge
@@ -120,5 +67,3 @@
     - Hello
 ]
 
-#tidy-tree-graph(json("test.json"))
-#tidy-tree-graph(yaml("test.yaml"))
