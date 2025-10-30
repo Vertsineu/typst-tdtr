@@ -1,1 +1,2 @@
-#import "src/core.typ" : tidy-tree-graph, tidy-tree-draws
+#import "src/core.typ" : tidy-tree-graph
+#import "src/draws.typ" as tidy-tree-draws : *

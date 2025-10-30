@@ -1,4 +1,5 @@
 #import "@preview/fletcher:0.5.8"
+#import "draws.typ" as tidy-tree-draws : *
 
 /*
   convert a flattened tree represented by array with indices to a simplified tree
@@ -507,6 +508,38 @@
 }
 
 /*
+  compose multiple draw-node functions sequentially
+  - input:
+    - `draw-nodes`: array of draw-node functions
+      - see `tidy-tree-elements` for the format
+  - output:
+    - `ret`: a composed draw-node function
+*/
+#let sequential-draw-node(draw-nodes) = {
+  let func = (..) => arguments()
+  for draw-node in draw-nodes {
+    func = (..info) => arguments(..func(..info), ..draw-node(..info))
+  }
+  return func
+}
+
+/*
+  compose multiple draw-edge functions sequentially
+  - input:
+    - `draw-edges`: array of draw-edge functions
+      - see `tidy-tree-elements` for the format
+  - output:
+    - `ret`: a composed draw-edge function
+*/
+#let sequential-draw-edge(draw-edges) = {
+  let func = (..) => arguments()
+  for draw-edge in draw-edges {
+    func = (..info) => arguments(..func(..info), ..draw-edge(..info))
+  }
+  return func
+}
+
+/*
   generate elements for drawing a tidy tree
   - input:
     - `tree`: a normalized tree represented by a three-dimensional array
@@ -517,19 +550,23 @@
       - see `tidy-tree-xs` for the format
     - `draw-node`: function for drawing a node, default to a rectangle node
       - input:
-        - `pos`: position of the node, `(x, y)`, where `x` is the horizontal axis position calculated by `tidy-tree-xs`, `y` is the level of the node
-        - `name`: label of the node, can be used to connect edges
-        - `label`: label of the node, can be used to display text
-        - `(i, j, k)`: indices of the node in the tree structure
+        - `node`: the information of the node, represented by a dictionary with the following keys:
+          - `name`: name of the node, can be used to connect edges
+          - `label`: label of the node, can be used to display content
+          - `pos`: position of the node in the tree structure, represented by a dictionary with the following keys:
+            - `i`: level of the node
+            - `j`: index of the parent node in the flattened `i - 1`-th level
+            - `k`: index of the child node in the children of the parent node
+            - `x`: horizontal axis position of the node
       - output:
-        - `ret`: a node element
+        - `ret`: the arguments passed to `fletcher.node`, can be a dictionary, an array or an argument object
     - `draw-edge`: function for drawing an edge, default to a straight arrow
       - input:
-        - `from-name`: label of the parent node
-        - `to-name`: label of the child node
-        - `((i1, j1, k1), (i2, j2, k2))`: indices of the parent node and child node in the tree structure
+        - `from-node`: the information of the parent node, same format as `node` in `draw-node`
+        - `to-node`: the information of the child node, same format as `node` in `draw-node`
+        - `edge-label`: label of the edge, can be used to display content
       - output:
-        - `ret`: an edge element
+        - `ret`: the arguments passed to `fletcher.edge`, can be a dictionary, an array or an argument object
     - `compact`: whether to compact the tree horizontally, default to false
       - if true, may cause overlapping nodes when some very long nodes are siblings in fractional positions
   - output:
@@ -537,7 +574,7 @@
 */
 #let tidy-tree-elements(tree, xs, tree-edges, draw-node, draw-edge, compact: false) = {
   let elements = ()
-  let parents = (((none, none), none), ) * tree.at(0).len() // labels of parent nodes for current level
+  let parents = (none, ) * tree.at(0).len() // labels of parent nodes for current level
   let label-count = 0
   let new-label(label-count) = {
     label("tree-label-" + str(label-count))
@@ -545,35 +582,49 @@
   // for every (i, j, k), means the i-th level, the j-th parent, the k-th child
   for (i, level) in tree.enumerate() {
     for (j, children) in level.enumerate() {
-      let ((parent-label, parent), parent-position) = parents.at(j)
+      let parent-node = parents.at(j)
       for (k, child) in children.enumerate() {
+        let x = xs.at(i).at(j).at(k)
+
         let child-edge = tree-edges.at(i).at(j).at(k)
         let child-label = new-label(label-count); label-count += 1
-        let x = xs.at(i).at(j).at(k)
-        let child-position = (i, j, k, x)
+        let child-pos = (i: i, j: j, k: k, x: x)
+        let child-node = (
+          name: child-label, 
+          label: child, 
+          pos: child-pos
+        )
 
         // prevent overlapping nodes by drawing hidden nodes at left and right positions
         if not compact {
-          let child-position-left = (i, j, k, calc.floor(x))
-          let child-position-right = (i, j, k, calc.ceil(x))
+          let child-pos-left = (i: i, j: j, k: k, x: calc.floor(x))
+          let child-pos-right = (i: i, j: j, k: k, x: calc.ceil(x))
 
-          elements.push(
-            fletcher.hide(draw-node(none, child, child-position-left))
+          let child-node-left = (
+            name: none, 
+            label: child, 
+            pos: child-pos-left
           )
+          let child-node-right = (
+            name: none, 
+            label: child, 
+            pos: child-pos-right
+          )
+
+          elements.push(fletcher.hide(fletcher.node(..draw-node(child-node-left))))
+          elements.push(fletcher.hide(fletcher.node(..draw-node(child-node-right))))
+        }
+
+        // add node and edge
+        elements.push(fletcher.node(..draw-node(child-node)))
+        if parent-node != none {
           elements.push(
-            fletcher.hide(draw-node(none, child, child-position-right))
+            fletcher.edge(..draw-edge(parent-node, child-node, child-edge))
           )
         }
 
-        elements.push(
-          draw-node(child-label, child, child-position)
-        )
-        if (parent-label != none) {
-          elements.push(
-            draw-edge((parent-label, parent, parent-position), (child-label, child, child-position), child-edge)
-          )
-        }
-        parents.push(((child-label, child), (i, j, k, x)))
+        // update parents for next level
+        parents.push(child-node)
       }
     }
     parents = parents.slice(level.len())
@@ -581,71 +632,16 @@
 
   elements
 }
-
-/// pre-defined drawing functions for tidy tree
-#let tidy-tree-draws = (
-  /// default function for drawing a node
-  default-draw-node: (name, label, (i, j, k, x)) => 
-    fletcher.node((x, i), [#label], name: name, shape: rect),
-  /// draw a node as a circle
-  circle-draw-node: (name, label, (i, j, k, x)) => 
-    fletcher.node((x, i), [#label], name: name, shape: circle),
-  /// default function for drawing an edge
-  default-draw-edge: ((from-name, from-label, (i1, j1, k1, x1)), (to-name, to-label, (i2, j2, k2, x2)), edge-label) => {
-    if edge-label == none {
-      fletcher.edge(from-name, to-name, "-|>")
-    } else {
-      fletcher.edge(from-name, to-name, "-|>", box(fill: white, inset: 2pt)[#edge-label], label-sep: 0pt, label-anchor: "center")
-    }
-  },
-  /// draw an edge in reversed direction
-  reversed-draw-edge: ((from-name, from-label, (i1, j1, k1, x1)), (to-name, to-label, (i2, j2, k2, x2)), edge-label) => {
-    if edge-label == none {
-      fletcher.edge(to-name, from-name, "-|>")
-    } else {
-      fletcher.edge(to-name, from-name, "-|>", box(fill: white, inset: 2pt)[#edge-label], label-sep: 0pt, label-anchor: "center")
-    }
-  },
-  /// draw an edge with horizontal-vertical style
-  horizontal-vertical-draw-edge: ((from-name, from-label, (i1, j1, k1, x1)), (to-name, to-label, (i2, j2, k2, x2)), edge-label) => {
-    let from-anchor = (name: from-name, anchor: "south")
-    let to-anchor = (name: to-name, anchor: "north")
-    let middle-anchor = (from-anchor, 50%, to-anchor)
-    if x1 == x2 {
-      fletcher.edge(from-anchor, to-anchor, "-|>", edge-label)
-    } else {
-      fletcher.edge(
-        from-anchor,
-        ((), "|-", middle-anchor),
-        ((), "-|", to-anchor),
-        to-anchor,
-        "-|>",
-        edge-label
-      )
-    }
-  },
-)
-
+ 
 /*
   draw a tidy tree
   - input:
     - `body`: a content with a list or enum, or a dictionary with arrays
       - see `tidy-tree-from-list` and `tidy-tree-from-dict-with-arrays` for the format
-    - `draw-node`: function for drawing a node, default to a rectangle node
-      - input:
-        - `pos`: position of the node, `(x, y)`, where `x` is the horizontal axis position calculated by `tidy-tree-xs`, `y` is the level of the node
-        - `name`: label of the node, can be used to connect edges
-        - `label`: label of the node, can be used to display text
-        - `(i, j, k, x)`: indices and horizontal position of the node in the tree structure
-      - output:
-        - `ret`: a node element
-    - `draw-edge`: function for drawing an edge, default to a straight arrow
-      - input:
-        - `from-name`: label of the parent node
-        - `to-name`: label of the child node
-        - `((i1, j1, k1, x1), (i2, j2, k2, x2))`: indices and horizontal position of the parent node and child node in the tree structure
-      - output:
-        - `ret`: an edge element
+    - `draw-node`: a single or an array of functions for drawing a node, default to a rectangle node
+      - see `tidy-tree-elements` for the format of every function
+    - `draw-edge`: a single or an array of functions for drawing an edge, default to a straight arrow
+      - see `tidy-tree-elements` for the format of every function
     - `compact`: whether to compact the tree horizontally, default to false
       - if true, may cause overlapping nodes when some very long nodes are siblings in fractional positions
     - `min-gap`: minimum gap between two nodes, default to 1
@@ -695,6 +691,20 @@
 
   // calculate the horizontal axis position of every node
   let (xs, _) = tidy-tree-xs(tree, min-gap: min-gap)
+
+  // compose multiple draw-node functions if needed
+  let draw-node = if type(draw-node) == array {
+    sequential-draw-node(draw-node)
+  } else {
+    draw-node
+  }
+  // compose multiple draw-edge functions if needed
+  let draw-edge = if type(draw-edge) == array {
+    sequential-draw-node(draw-edge)
+  } else {
+    draw-edge
+  }
+
   // generate elements
   let elements = tidy-tree-elements(tree, xs, tree-edges, draw-node, draw-edge, compact: compact)
 
