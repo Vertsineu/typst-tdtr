@@ -194,3 +194,12 @@
     )
   }
 }
+
+/// **************************************
+/// draw-graph functions
+/// **************************************
+
+/// default function for drawing a graph
+#let default-draw-graph = (args, elements, ..) => {
+  arguments(..args, ..elements)
+}

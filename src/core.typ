@@ -610,6 +610,14 @@
       - see `tidy-tree-elements` for the format of every function
     - `draw-edge`: a single or an array of functions for drawing an edge, default to a straight arrow
       - see `tidy-tree-elements` for the format of every function
+    - `draw-graph`: a single or an array of functions for drawing the whole graph, default to just passing arguments and elements to `fletcher.diagram`
+      - input:
+        - `args`: some configuration relative arguments for `fletcher.diagram`
+        - `elements`: the generated elements (nodes and edges) from the `body`
+        - `node`: the `fletcher.node` function, used to draw nodes if you need to add extra nodes
+        - `edge`: the `fletcher.edge` function, used to draw edges if you need to add extra edges
+      - output:
+        - `ret`: the arguments passed to `fletcher.diagram`, can be a dictionary, an array or an argument object
     - `compact`: whether to compact the tree horizontally, default to false
       - if true, may cause overlapping nodes when some very long nodes are siblings in fractional positions
     - `min-gap`: minimum gap between two nodes, default to 1
@@ -626,6 +634,7 @@
   body,
   draw-node: tidy-tree-draws.default-draw-node,
   draw-edge: tidy-tree-draws.default-draw-edge,
+  draw-graph: tidy-tree-draws.default-draw-graph,
   compact: false,
   min-gap: 1,
   text-size: 8pt,
@@ -676,16 +685,22 @@
   // generate elements
   let elements = tidy-tree-elements(tree, xs, tree-edges, draw-node, draw-edge, compact: compact)
 
-  set text(size: text-size)
-  fletcher.diagram(
+  // construct arguments
+  let args = arguments(
     node-stroke: node-stroke,
     spacing: spacing,
     node-inset: node-inset,
     edge-corner-radius: edge-corner-radius,
     ..args,
-
-    // Nodes
-    ..elements,
   )
-  
+
+  // compose multiple draw-graph functions if needed
+  let draw-graph = if type(draw-graph) == array {
+    tidy-tree-draws.sequential-draw-function(..draw-graph)
+  } else {
+    draw-graph
+  }
+
+  set text(size: text-size)
+  fletcher.diagram(..draw-graph(args, elements, fletcher.node, fletcher.edge))
 }
