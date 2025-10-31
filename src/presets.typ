@@ -1,7 +1,7 @@
 /// some pre-defined variants for tidy-tree-graph
 #import "core.typ" : tidy-tree-graph, tidy-tree-draws
 
-#let red-black-tree-graph = tidy-tree-graph.with(
+#let red-black-tree-graph(..args) = tidy-tree-graph(
   node-inset: 4pt,
   spacing: (15pt, 15pt),
   draw-node: (
@@ -23,5 +23,6 @@
       )
     ),
     (marks: "-", stroke: .6pt),
-  )
+  ),
+  ..args
 )
