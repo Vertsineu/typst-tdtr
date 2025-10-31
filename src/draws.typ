@@ -1,5 +1,23 @@
 /// pre-defined drawing functions for tidy tree
 
+/*
+  compose multiple draw-node functions sequentially
+  - input:
+    - `draw-nodes`: array of draw-node functions
+      - see `tidy-tree-elements` for the format
+  - output:
+    - `ret`: a composed draw-node function
+*/
+#let sequential-draw-node(..draw-nodes) = {
+  let func = (..) => arguments()
+  for draw-node in draw-nodes.pos() {
+    // make sure draw-node is a valid function
+    draw-node = shortcut-draw-node(draw-node)
+    func = (..info) => arguments(..func(..info), ..draw-node(..info))
+  }
+  return func
+}
+
 /// default function for drawing a node
 #let default-draw-node = ((name, label, pos)) => {
   (
@@ -15,6 +33,23 @@
   default-draw-node((name, label, pos)) + (
     shape: circle
   )
+}
+
+/*
+  compose multiple draw-edge functions sequentially
+  - input:
+    - `draw-edges`: array of draw-edge functions
+      - see `tidy-tree-elements` for the format
+  - output:
+    - `ret`: a composed draw-edge function
+*/
+#let sequential-draw-edge(..draw-edges) = {
+  let func = (..) => arguments()
+  for draw-edge in draw-edges.pos() {
+    draw-edge = shortcut-draw-edge(draw-edge)
+    func = (..info) => arguments(..func(..info), ..draw-edge(..info))
+  }
+  return func
 }
 
 /// default function for drawing an edge
