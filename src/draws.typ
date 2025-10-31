@@ -1,4 +1,5 @@
 /// pre-defined drawing functions for tidy tree
+#import "utils.typ" : collect-metadata
 
 /// process the input draw-function to a valid draw-function
 #let shortcut-draw-function(draw-function) = {
@@ -45,23 +46,6 @@
 
 /// draw a node with metadata matching
 #let metadata-match-draw-node = ((name, label, pos), matches: (:), default: (:)) => {
-  let collect-metadata(label) = {
-    if type(label) != content {
-      return ()
-    }
-
-    if not label.has("children") {
-      if label.func() == metadata {
-        return (label.value, )
-      } else {
-        return ()
-      }
-    }
-
-    label.children
-      .fold((), (acc, child) => acc + collect-metadata(child))
-  }
-
   let ret = arguments()
   let matched = false
   let keys = matches.keys()
@@ -110,23 +94,6 @@
 
 /// draw an edge with metadata matching
 #let metadata-match-draw-edge = (from-node, to-node, edge-label, from-matches: (:), to-matches: (:), matches: (:), default: (:)) => {
-  let collect-metadata(label) = {
-    if type(label) != content {
-      return ()
-    }
-
-    if not label.has("children") {
-      if type(label) == content and label.func() == metadata {
-        return (label.value, )
-      } else {
-        return ()
-      }
-    }
-
-    label.children
-      .fold((), (acc, child) => acc + collect-metadata(child))
-  }
-
   let ret = arguments()
   let matched = false
   let keys = matches.keys()

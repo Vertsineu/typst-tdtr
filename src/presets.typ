@@ -1,5 +1,10 @@
 /// some pre-defined variants for tidy-tree-graph
 #import "core.typ" : tidy-tree-graph, tidy-tree-draws
+#import "utils.typ" : list-from-content
+
+/// convert content into a tree graph
+/// suitable for debugging or visualizing the content structure
+#let content-tree-graph(body, ..args) = tidy-tree-graph(list-from-content(body), ..args)
 
 /// suitable for the trees whose nodes and edges have simple and short content, e.g., a binary tree
 /// use #metadata("nil") to mark nil nodes which only affect layout but do not be drawn
