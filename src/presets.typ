@@ -61,3 +61,42 @@
   ),
   ..args
 )
+
+/// suitable for the trees whose node are relatively not short, e.g., B-trees
+/// use #metadata("nil") to mark nil nodes which only affect layout but do not be drawn
+#let b-tree-graph(..args) = tidy-tree-graph(
+  node-inset: 4pt,
+  spacing: (15pt, 15pt),
+  draw-node: (
+    tidy-tree-draws.default-draw-node,
+    tidy-tree-draws.metadata-match-draw-node.with(
+      matches: (
+        nil: (post: x => none)
+      )
+    ),
+    // if the width of the label is less than its height, 
+    // it will look like a thin pill, and I think this is unpleasant
+    // so to prevent this, we make the width at least equal to the height
+    ((label, )) => (
+      label: context {
+        let (width, height) = measure([#label])
+        if width < height {
+          box(width: height)[#label]
+        } else {
+          [#label]
+        }
+      }
+    ),
+    (stroke: .5pt, shape: shapes.pill)
+  ),
+  draw-edge: (
+    tidy-tree-draws.default-draw-edge,
+    tidy-tree-draws.metadata-match-draw-edge.with(
+      to-matches: (
+        nil: (post: x => none),
+      )
+    ),
+    (marks: "-", stroke: .5pt),
+  ),
+  ..args
+)
