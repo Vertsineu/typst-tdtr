@@ -624,6 +624,10 @@
     - `text-size`: size of the text, default to 6pt
     - `node-stroke`: stroke of the node, default to 0.25pt
     - `node-inset`: inset of the node, default to 2pt
+    - `node-width`: width of the node, default to auto
+      - Note: this is not the argument of `fletcher.diagram`, only supported in this function
+    - `node-height`: height of the node, default to auto
+      - Note: this is not the argument of `fletcher.diagram`, only supported in this function
     - `spacing`: horizontal and vertical spacing between nodes, default to (5pt, 10pt)
     - `edge-corner-radius`: corner radius of the edge, default to none
     - `..args`: other arguments for `fletcher.diagram`
@@ -639,8 +643,10 @@
   min-gap: 1,
   text-size: 8pt,
   node-stroke: 0.25pt,
-  spacing: (6pt, 15pt),
   node-inset: 3pt,
+  node-width: auto,
+  node-height: auto,
+  spacing: (6pt, 15pt),
   edge-corner-radius: none,
   ..args,
 ) = {
@@ -669,11 +675,17 @@
   // calculate the horizontal axis position of every node
   let (xs, _) = tidy-tree-xs(tree, min-gap: min-gap)
 
+  // support node width and node height settings, which are not supported in `fletcher.diagram` directly
+  let size-draw-node = tidy-tree-draws.size-draw-node.with(
+    width: node-width,
+    height: node-height
+  )
+
   // compose multiple draw-node functions if needed
   let draw-node = if type(draw-node) == array {
-    tidy-tree-draws.sequential-draw-function(..draw-node)
+    tidy-tree-draws.sequential-draw-function(size-draw-node, ..draw-node)
   } else {
-    draw-node
+    tidy-tree-draws.sequential-draw-function(size-draw-node, draw-node)
   }
   // compose multiple draw-edge functions if needed
   let draw-edge = if type(draw-edge) == array {

@@ -1,5 +1,5 @@
 /// some pre-defined variants for tidy-tree-graph
-#import "core.typ" : tidy-tree-graph, tidy-tree-draws
+#import "core.typ" : tidy-tree-graph, tidy-tree-draws, fletcher.shapes
 #import "utils.typ" : list-from-content
 
 /// convert content into a tree graph
@@ -10,6 +10,7 @@
 /// use #metadata("nil") to mark nil nodes which only affect layout but do not be drawn
 #let binary-tree-graph(..args) = tidy-tree-graph(
   node-inset: 4pt,
+  node-width: 1.6em,
   spacing: (15pt, 15pt),
   draw-node: (
     tidy-tree-draws.circle-draw-node,
@@ -36,6 +37,7 @@
 /// use #metadata("red") to mark red nodes whose fill color is red and #metadata("nil") to mark nil nodes which only affect layout but do not be drawn
 #let red-black-tree-graph(..args) = tidy-tree-graph(
   node-inset: 4pt,
+  node-width: 1.6em,
   spacing: (15pt, 15pt),
   draw-node: (
     tidy-tree-draws.circle-draw-node,

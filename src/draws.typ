@@ -66,6 +66,14 @@
   ret
 }
 
+/// draw a node with specified width and height
+#let size-draw-node = ((name, label, pos), width: auto, height: auto) => {
+  (
+    width: width,
+    height: height
+  )
+}
+
 /// draw a node as a circle
 #let circle-draw-node = ((name, label, pos)) => {
   default-draw-node((name, label, pos)) + (
