@@ -1,4 +1,4 @@
-#import "@preview/tdtr:0.2.0": *
+#import "@preview/tdtr:0.3.0": *
 
 #set page(height: auto, width: auto, margin: 1em)
 
@@ -13,15 +13,15 @@
         - the
           - Nest
         - Time
-            - World
-              - Whats
-                - Day
-              - the
-              - Time
-                - Hello
-              - Today
-              - Something
-                - Interesting
+          - World
+            - Whats
+              - Day
+            - the
+            - Time
+              - Hello
+            - Today
+            - Something
+              - Interesting
       - This
       - Day
         - Hello

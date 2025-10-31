@@ -1,10 +1,10 @@
-#import "@preview/tdtr:0.2.0" : *
+#import "@preview/tdtr:0.3.0": *
 
 #set page(height: auto, width: auto, margin: 1em)
 
 #tidy-tree-graph(
   spacing: (20pt, 20pt),
-  node-inset: 4pt
+  node-inset: 4pt,
 )[
   - $I_0$
     + $E$

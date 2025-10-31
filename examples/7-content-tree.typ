@@ -1,4 +1,4 @@
-#import "@preview/tdtr:0.2.0" : *
+#import "@preview/tdtr:0.3.0": *
 
 #set page(height: auto, width: auto, margin: 1em)
 
@@ -6,7 +6,7 @@
   = Heading 1
 
   `int main() {}` <code>
-  
+
   $
     integral_0^infinity e^(-x) dif x
   $
