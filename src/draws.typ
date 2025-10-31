@@ -1,34 +1,37 @@
 /// pre-defined drawing functions for tidy tree
 
-/// process the input draw-node to a valid draw-node function
-#let shortcut-draw-node(draw-node) = {
-  let typ = type(draw-node)
+/// process the input draw-function to a valid draw-function
+#let shortcut-draw-function(draw-function) = {
+  let typ = type(draw-function)
   if typ == function {
-    return draw-node
+    return draw-function
   } else if typ == arguments or typ == dictionary or typ == array {
-    return (..) => draw-node
+    return (..) => draw-function
   } else {
-    error("Invalid draw-node type: " + str(typ))
+    error("Invalid draw-function type: " + str(typ))
   }
 }
 
 /*
-  compose multiple draw-node functions sequentially
+  compose multiple draw-function functions sequentially
   - input:
-    - `draw-nodes`: array of draw-node functions
+    - `draw-functions`: array of draw-function functions
       - see `tidy-tree-elements` for the format
   - output:
-    - `ret`: a composed draw-node function
+    - `ret`: a composed draw-function function
 */
-#let sequential-draw-node(..draw-nodes) = {
+#let sequential-draw-function(..draw-functions) = {
   let func = (..) => arguments()
-  for draw-node in draw-nodes.pos() {
-    // make sure draw-node is a valid function
-    draw-node = shortcut-draw-node(draw-node)
-    func = (..info) => arguments(..func(..info), ..draw-node(..info))
+  for draw-function in draw-functions.pos() {
+    draw-function = shortcut-draw-function(draw-function)
+    func = (..info) => arguments(..func(..info), ..draw-function(..info))
   }
   return func
 }
+
+/// **************************************
+/// draw-node functions
+/// **************************************
 
 /// default function for drawing a node
 #let default-draw-node = ((name, label, pos)) => {
@@ -66,7 +69,7 @@
   for key in collect-metadata(label) {
     if keys.contains(key) {
       // support shortcut draw-node
-      let draw-node = shortcut-draw-node(matches.at(key))
+      let draw-node = shortcut-draw-function(matches.at(key))
       ret = arguments(..ret, ..draw-node((name, label, pos)))
       matched = true
     }
@@ -86,36 +89,9 @@
   )
 }
 
-/// process the input draw-edge to a valid draw-edge function
-#let shortcut-draw-edge(draw-edge) = {
-  let typ = type(draw-edge)
-  if typ == function {
-    return draw-edge
-  } else if typ == array and draw-edge.all(x => type(x) == function) {
-    return sequential-draw-edge(draw-edge)
-  } else if typ == arguments or typ == dictionary or typ == array {
-    return (..) => draw-edge
-  } else {
-    error("Invalid draw-edge type: " + str(typ))
-  }
-}
-
-/*
-  compose multiple draw-edge functions sequentially
-  - input:
-    - `draw-edges`: array of draw-edge functions
-      - see `tidy-tree-elements` for the format
-  - output:
-    - `ret`: a composed draw-edge function
-*/
-#let sequential-draw-edge(..draw-edges) = {
-  let func = (..) => arguments()
-  for draw-edge in draw-edges.pos() {
-    draw-edge = shortcut-draw-edge(draw-edge)
-    func = (..info) => arguments(..func(..info), ..draw-edge(..info))
-  }
-  return func
-}
+/// **************************************
+/// draw-edge functions
+/// **************************************
 
 /// default function for drawing an edge
 #let default-draw-edge = (from-node, to-node, edge-label) => {
@@ -157,7 +133,7 @@
   // check whether any metadata in edge labels matches
   for key in collect-metadata(edge-label) {
     if keys.contains(key) {
-      let draw-edge = shortcut-draw-edge(matches.at(key))
+      let draw-edge = shortcut-draw-function(matches.at(key))
       ret = arguments(..ret, ..draw-edge(from-node, to-node, edge-label))
       matched = true
     }
@@ -166,7 +142,7 @@
   // check whether any metadata in from node labels matches
   for key in collect-metadata(from-node.label) {
     if keys.contains(key) {
-      let draw-edge = shortcut-draw-edge(from-matches.at(key))
+      let draw-edge = shortcut-draw-function(from-matches.at(key))
       ret = arguments(..ret, ..draw-edge(from-node, to-node, edge-label))
       matched = true
     }
@@ -175,7 +151,7 @@
   // check whether any metadata in to node labels matches
   for key in collect-metadata(to-node.label) {
     if keys.contains(key) {
-      let draw-edge = shortcut-draw-edge(to-matches.at(key))
+      let draw-edge = shortcut-draw-function(to-matches.at(key))
       ret = arguments(..ret, ..draw-edge(from-node, to-node, edge-label))
       matched = true
     }

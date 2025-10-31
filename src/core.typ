@@ -662,13 +662,13 @@
 
   // compose multiple draw-node functions if needed
   let draw-node = if type(draw-node) == array {
-    tidy-tree-draws.sequential-draw-node(..draw-node)
+    tidy-tree-draws.sequential-draw-function(..draw-node)
   } else {
     draw-node
   }
   // compose multiple draw-edge functions if needed
   let draw-edge = if type(draw-edge) == array {
-    tidy-tree-draws.sequential-draw-edge(..draw-edge)
+    tidy-tree-draws.sequential-draw-function(..draw-edge)
   } else {
     draw-edge
   }
