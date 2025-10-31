@@ -508,38 +508,6 @@
 }
 
 /*
-  compose multiple draw-node functions sequentially
-  - input:
-    - `draw-nodes`: array of draw-node functions
-      - see `tidy-tree-elements` for the format
-  - output:
-    - `ret`: a composed draw-node function
-*/
-#let sequential-draw-node(draw-nodes) = {
-  let func = (..) => arguments()
-  for draw-node in draw-nodes {
-    func = (..info) => arguments(..func(..info), ..draw-node(..info))
-  }
-  return func
-}
-
-/*
-  compose multiple draw-edge functions sequentially
-  - input:
-    - `draw-edges`: array of draw-edge functions
-      - see `tidy-tree-elements` for the format
-  - output:
-    - `ret`: a composed draw-edge function
-*/
-#let sequential-draw-edge(draw-edges) = {
-  let func = (..) => arguments()
-  for draw-edge in draw-edges {
-    func = (..info) => arguments(..func(..info), ..draw-edge(..info))
-  }
-  return func
-}
-
-/*
   generate elements for drawing a tidy tree
   - input:
     - `tree`: a normalized tree represented by a three-dimensional array
