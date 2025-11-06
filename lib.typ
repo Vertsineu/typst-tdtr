@@ -1,3 +1,3 @@
-#import "src/presets.typ" : *
+#import "src/presets.typ" : content-tree-graph, binary-tree-graph, red-black-tree-graph, b-tree-graph
 #import "src/core.typ" : tidy-tree-graph
 #import "src/draws.typ" as tidy-tree-draws : *
