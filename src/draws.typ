@@ -54,7 +54,7 @@
     if keys.contains(key) {
       // support shortcut draw-node
       let draw-node = shortcut-draw-function(matches.at(key))
-      ret = arguments(..ret, ..draw-node((name, label, pos)))
+      ret = arguments(..ret, ..draw-node((name: name, label: label, pos: pos)))
       matched = true
     }
   }
