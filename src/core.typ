@@ -364,6 +364,8 @@
     - `tree`: a normalized tree represented by a three-dimensional array
       - see `tidy-tree-normalize` for the format
     - `min-gap`: minimum gap between two nodes, default to 1
+    - `subtree-levels`: levels of subtrees to be kept uncompressed, default to ()
+      - e.g. `(1, )` means the subtrees of the root will not be compressed, usually used by drawing forest where we do not want any compression between trees but we still want compression inside each tree
     - `body`: only for debug, never use it
   - output:
     - `ret`: `(xs, body)`
@@ -371,7 +373,7 @@
       - `body`: only for debug, never use it
       
 */
-#let tidy-tree-xs(tree, min-gap: 1, body: []) = {
+#let tidy-tree-xs(tree, min-gap: 1, subtree-levels: (), body: []) = {
   // calculate the horizontal axis position of every node
   let xs = tree.map(level => level.map(nodes => nodes.map(_ => 0)))
 
@@ -475,6 +477,15 @@
     rights.at(i).at(j).at(k) = rights.at(i + 1).at(n).reduce((a, b) => a.zip(b).map(((x, y)) => calc.max(x, y)))
     lefts.at(i).at(j).at(k).at(i) = leafx
     rights.at(i).at(j).at(k).at(i) = leafx
+
+    // treat the subtree as a whole to avoid further compression
+    if i in subtree-levels {
+      let left-most = calc.min(..lefts.at(i).at(j).at(k))
+      let right-most = calc.max(..rights.at(i).at(j).at(k))
+
+      lefts.at(i).at(j).at(k) = lefts.at(i).at(j).at(k).map(_ => left-most)
+      rights.at(i).at(j).at(k) = rights.at(i).at(j).at(k).map(_ => right-most)
+    }
 
     (dxs, lefts, rights, body)
   }
@@ -623,6 +634,8 @@
     - `compact`: whether to compact the tree horizontally, default to false
       - if true, may cause overlapping nodes when some very long nodes are siblings in fractional positions
     - `min-gap`: minimum gap between two nodes, default to 1
+    - `subtree-levels`: levels of subtrees to be kept uncompressed, default to ()
+      - see `tidy-tree-xs` for more details
     - `text-size`: size of the text, default to 6pt
     - `node-stroke`: stroke of the node, default to 0.25pt
     - `node-inset`: inset of the node, default to 2pt
@@ -643,6 +656,7 @@
   additional-draw: tidy-tree-draws.default-additional-draw,
   compact: false,
   min-gap: 1,
+  subtree-levels: (),
   text-size: 8pt,
   node-stroke: 0.25pt,
   node-inset: 3pt,
@@ -675,7 +689,7 @@
   let tree-edges = tidy-tree-normalize(tree-edges)
 
   // calculate the horizontal axis position of every node
-  let (xs, _) = tidy-tree-xs(tree, min-gap: min-gap)
+  let (xs, _) = tidy-tree-xs(tree, min-gap: min-gap, subtree-levels: subtree-levels)
 
   // support node width and node height settings, which are not supported in `fletcher.diagram` directly
   let size-draw-node = tidy-tree-draws.size-draw-node.with(
