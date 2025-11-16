@@ -97,3 +97,44 @@
     (marks: "-", stroke: .5pt),
   )
 )
+
+/// specialized for Fibonacci heaps, with color-coded marked nodes and additional connections between root nodes
+/// use #metadata("root") to mark root nodes and #metadata("mark") to mark marked nodes
+#let fibonacci-heap-graph = tidy-tree-graph.with(
+  node-inset: 4pt,
+  node-width: 1.6em,
+  spacing: (15pt, 15pt),
+  draw-node: (
+    tidy-tree-draws.circle-draw-node,
+    tidy-tree-draws.metadata-match-draw-node.with(
+      matches: (
+        // override position to prevent blank area above the diagram
+        root: (post: x => none, pos: (0, 1)),
+        mark: ((label, )) => (
+          label: text(white)[#label], 
+          fill: color.rgb("#001219"), 
+          stroke: color.rgb("#001219")
+        )
+      )
+    )
+  ),
+  draw-edge: (
+    tidy-tree-draws.default-draw-edge,
+    tidy-tree-draws.metadata-match-draw-edge.with(
+      from-matches: (
+        root: (post: x => none)
+      )
+    ),
+    (marks: "-")
+  ),
+  additional-draw: (nodes, (node, edge)) => {
+    // add connections between root nodes
+    let tops = nodes.filter(n => n.pos.i == 1);
+    let conns = tops.slice(0, tops.len() - 1).zip(tops.slice(1))
+      .map(((f, t)) => edge(
+        vertices: (f.name, t.name),
+        marks: "--"
+      ));
+    conns
+  }
+)
