@@ -17,6 +17,7 @@ This package uses [fletcher](https://typst.app/universe/package/fletcher) to ren
   - [Customization](#customization)
     - [Pre-defined graph drawing functions](#pre-defined-graph-drawing-functions)
       - [Binary/B-/Red-Black Tree](#binaryb-red-black-tree)
+      - [Fibonacci Heap](#fibonacci-heap)
       - [Content Tree](#content-tree)
     - [(extra) Concept of node/edge drawing functions](#extra-concept-of-nodeedge-drawing-functions)
     - [Pre-defined node/edge drawing functions](#pre-defined-nodeedge-drawing-functions)
@@ -25,6 +26,7 @@ This package uses [fletcher](https://typst.app/universe/package/fletcher) to ren
       - [Other Pre-defined node/edge drawing functions](#other-pre-defined-nodeedge-drawing-functions)
     - [Custom node/edge drawing functions](#custom-nodeedge-drawing-functions)
     - [Shortcut node/edge drawing functions](#shortcut-nodeedge-drawing-functions)
+    - [Additional drawing functions](#additional-drawing-functions)
   - [API Reference](#api-reference)
 
 ## Getting Started
@@ -299,7 +301,13 @@ app:
 
 ## Customization
 
-You might think the default drawing style is not suitable for your case, and you can customize it by either using pre-defined graph drawing functions or passing pre-defined/custom node/edge drawing functions when creating the tidy tree.
+You might think the default drawing style is not suitable for your case, and you can customize it by either
+
+- using pre-defined graph drawing functions
+- passing pre-defined/custom node/edge drawing functions
+- or add additional nodes and edges for specially customized graphs
+
+when creating the tidy tree.
 
 ### Pre-defined graph drawing functions
 
@@ -338,6 +346,39 @@ Here is an example of drawing a red-black tree:
 ```
 
 where nodes labeled with `#red` metadata are drawn in red color, and nodes labeled with `#nil` metadata are hidden.
+
+#### Fibonacci Heap
+
+This package is also able to draw a tree constructed from multiple subtrees, e.g., a Fibonacci heap.
+
+Here is an example of drawing a Fibonacci heap:
+
+![fibonacci-heap](docs/8-fibonacci-heap.svg)
+
+```typ
+#let root = metadata("root")
+#let mark = metadata("mark")
+#fibonacci-heap-graph[
+  - #root
+    - 10
+      - 11
+    - 20
+      - 34
+        - 35
+      - 23
+    - 3
+      - 14
+      - 21
+        - 25
+      - 5 #mark
+        - 32
+        - 7 #mark
+          - 13
+    - 9
+]
+```
+
+where nodes labeled with `#root` metadata will be hidden while drawing, same as those edges pointing from them, and nodes labeled with `#mark` metadata will be drawn in black and their text in white.
 
 #### Content Tree
 
@@ -654,6 +695,51 @@ abbreviates to
 )
 ```
 
+### Additional drawing functions
+
+If you would like to add some other nodes/edges to the final diagram, you can pass an additional drawing function to `additional-draw` parameter of `tidy-tree-graph`, and similar to `draw-node` and `draw-edge`, array of drawing functions and shortcut drawing functions are also supported.
+
+The function should have the following signature:
+
+```typ
+(
+  nodes: array,
+  element-func: (
+    node: function,
+    edge: function
+  )
+) -> array
+```
+
+where
+
+- `nodes`: all the nodes in the tree, whose structure is the same as the parameter of `draw-node`
+- `element-func`: a tuple of two functions, where
+  - `node` is just `fletcher.node`, used to create additional nodes
+  - `edge` is just `fletcher.edge`, used to create additional edges
+
+And the return value should be an array of additional nodes and edges created using `element-func.node` and `element-func.edge`.
+
+For example, in the pre-defined fibonacci heap graph drawing function, we use an additional drawing function to draw the dash line between the root nodes:
+
+```typ
+#let fibonacci-heap-graph = tidy-tree-graph.with(
+  // ...
+  additional-draw: (nodes, (node, edge)) => {
+    // add connections between root nodes
+    let tops = nodes.filter(n => n.pos.i == 1);
+    let conns = tops.slice(0, tops.len() - 1).zip(tops.slice(1))
+      .map(((f, t)) => edge(
+        vertices: (f.name, t.name),
+        marks: "--"
+      ));
+    conns
+  }
+)
+```
+
+where the additional drawing function first finds all root nodes, namely nodes in level 1, then connects every two adjacent root nodes using a dashed edge.
+
 ## API Reference
 
 The main function provided by this package is `tidy-tree-graph`, which has the following signature:
@@ -666,9 +752,7 @@ The main function provided by this package is `tidy-tree-graph`, which has the f
   // for customization of drawing functions
   draw-node: ..., // see above
   draw-edge: ..., // see above
-  // if you would like to add some other nodes/edges to the final diagram,
-  // you can pass a custom graph drawing function here
-  draw-graph: tidy-tree-draws.default-draw-graph,
+  additional-draw: ..., // see above
 
   // make the tree more compact by reducing gaps between nodes
   // might cause overlapping nodes in some cases
@@ -677,6 +761,13 @@ The main function provided by this package is `tidy-tree-graph`, which has the f
   // the minimum relative gap while calculating the horizontal axis of nodes
   // do NOT use it unless you know what you are doing
   min-gap: 1,
+
+  // levels of subtrees that should NOT be compressed horizontally
+  // sometimes, you may not want some subtrees to be compressed for better readability
+  // e.g. forest, pass `subtree-levels: (1, )`
+  // because the subtrees in level 1 are roots of the trees in the forest
+  // and you may want them to be drawn like individual trees
+  subtree-levels: array,
 
   // set text(size: text-size)
   text-size: 8pt,
