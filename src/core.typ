@@ -542,6 +542,7 @@
 */
 #let tidy-tree-elements(tree, xs, tree-edges, draw-node, draw-edge, compact: false) = {
   let elements = ()
+  let nodes = ()
   let parents = (none, ) * tree.at(0).len() // labels of parent nodes for current level
   let label-count = 0
   let new-label(label-count) = {
@@ -585,6 +586,7 @@
 
         // add node and edge
         elements.push(fletcher.node(..draw-node(child-node)))
+        nodes.push(child-node)
         if parent-node != none {
           elements.push(
             fletcher.edge(..draw-edge(parent-node, child-node, child-edge))
@@ -598,7 +600,7 @@
     parents = parents.slice(level.len())
   }
 
-  elements
+  (elements, nodes)
 }
  
 /*
@@ -610,7 +612,7 @@
       - see `tidy-tree-elements` for the format of every function
     - `draw-edge`: a single or an array of functions for drawing an edge, default to a straight arrow
       - see `tidy-tree-elements` for the format of every function
-    - `draw-graph`: a single or an array of functions for drawing the whole graph, default to just passing arguments and elements to `fletcher.diagram`
+    - `additional-draw`: a single or an array of functions for drawing additional elements after drawing the tree, default to no additional drawing
       - input:
         - `args`: some configuration relative arguments for `fletcher.diagram`
         - `elements`: the generated elements (nodes and edges) from the `body`
@@ -638,7 +640,7 @@
   body,
   draw-node: tidy-tree-draws.default-draw-node,
   draw-edge: tidy-tree-draws.default-draw-edge,
-  draw-graph: tidy-tree-draws.default-draw-graph,
+  additional-draw: tidy-tree-draws.default-additional-draw,
   compact: false,
   min-gap: 1,
   text-size: 8pt,
@@ -695,7 +697,7 @@
   }
 
   // generate elements
-  let elements = tidy-tree-elements(tree, xs, tree-edges, draw-node, draw-edge, compact: compact)
+  let (elements, nodes) = tidy-tree-elements(tree, xs, tree-edges, draw-node, draw-edge, compact: compact)
 
   // construct arguments
   let args = arguments(
@@ -706,13 +708,19 @@
     ..args,
   )
 
-  // compose multiple draw-graph functions if needed
-  let draw-graph = if type(draw-graph) == array {
-    tidy-tree-draws.sequential-draw-function(..draw-graph)
+  // compose multiple additional-draw functions if needed
+  let additional-draw = if type(additional-draw) == array {
+    tidy-tree-draws.sequential-draw-function(..additional-draw)
   } else {
-    draw-graph
+    additional-draw
   }
 
+  // wrap element functions and pass it to addition draw
+  let element-func = (
+    node: fletcher.node,
+    edge: fletcher.edge
+  )
+
   set text(size: text-size)
-  fletcher.diagram(..draw-graph(args, elements, fletcher.node, fletcher.edge))
+  fletcher.diagram(..args, ..elements, ..additional-draw(nodes, element-func))
 }

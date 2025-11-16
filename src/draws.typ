@@ -171,10 +171,8 @@
 }
 
 /// **************************************
-/// draw-graph functions
+/// additional draw functions
 /// **************************************
 
-/// default function for drawing a graph
-#let default-draw-graph = (args, elements, ..) => {
-  arguments(..args, ..elements)
-}
+/// default function for drawing additional elements, i.e., no additional drawing
+#let default-additional-draw = (..) => ()
