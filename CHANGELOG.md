@@ -1,3 +1,31 @@
+# [0.4.0](https://github.com/Vertsineu/typst-tdtr/compare/v0.3.0...v0.4.0) (2025-11-16)
+
+
+### Bug Fixes
+
+* limit the export functions from presets ([79bbf59](https://github.com/Vertsineu/typst-tdtr/commit/79bbf5989ba6af62f8b95e984c0db7553085ce17))
+* pass dictionary instead of array ([09887f7](https://github.com/Vertsineu/typst-tdtr/commit/09887f7df13d02d36a54f1c0f98d8930ef2329d5))
+* use function.with instead for better hint ([d56def7](https://github.com/Vertsineu/typst-tdtr/commit/d56def70f030469bb8cb3b96d636a8ad5a626311))
+
+
+### Code Refactoring
+
+* replace draw-graph parameter with additional-draw ([27af854](https://github.com/Vertsineu/typst-tdtr/commit/27af8544f03be37334f030a9d95218e7fc148a40))
+
+
+### Features
+
+* add pre-defined graph drawing function for fibonacci heap ([2c225da](https://github.com/Vertsineu/typst-tdtr/commit/2c225da161671bbb73b5bbb1ccf79d2200a670bd))
+* add subtree-levels parameter for situations when you do not want compression in some level ([45d65a9](https://github.com/Vertsineu/typst-tdtr/commit/45d65a944914a26047b30fde09db7ed6578d0f4d))
+
+
+### BREAKING CHANGES
+
+* From now, you should replace draw-graph with additional-draw which provides much
+better experience of customization
+
+
+
 # [0.3.0](https://github.com/Vertsineu/typst-tdtr/compare/v0.2.0...v0.3.0) (2025-10-31)
 
 
