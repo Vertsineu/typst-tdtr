@@ -1,3 +1,17 @@
+## [0.4.1](https://github.com/Vertsineu/typst-tdtr/compare/v0.4.0...v0.4.1) (2025-12-01)
+
+
+### Bug Fixes
+
+* use shortcut draw function for default ([b9a2f42](https://github.com/Vertsineu/typst-tdtr/commit/b9a2f426c04b3afef76a787cd4860ec9b783fffb))
+
+
+### Features
+
+* support label match draw node/edge ([2621dba](https://github.com/Vertsineu/typst-tdtr/commit/2621dbafbb271292db376ee9ca8f9f0d36a0505c))
+
+
+
 # [0.4.0](https://github.com/Vertsineu/typst-tdtr/compare/v0.3.0...v0.4.0) (2025-11-16)
 
 
