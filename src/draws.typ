@@ -1,5 +1,5 @@
 /// pre-defined drawing functions for tidy tree
-#import "utils.typ" : collect-metadata
+#import "utils.typ" : collect-metadata, collect-label
 
 /// process the input draw-function to a valid draw-function
 #let shortcut-draw-function(draw-function) = {
@@ -60,7 +60,8 @@
   }
   // default case when no metadata matches
   if not matched {
-    ret = arguments(..default)
+    let draw-node = shortcut-draw-function(default)
+    ret = arguments(..draw-node((name: name, label: label, pos: pos)))
   }
   
   ret
@@ -134,7 +135,8 @@
 
   // default case when no metadata matches
   if not matched {
-    ret = arguments(..default)
+    let draw-edge = shortcut-draw-function(default)
+    ret = arguments(..ret, ..draw-edge(from-node, to-node, edge-label))
   }
 
   ret
