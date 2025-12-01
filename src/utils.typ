@@ -23,6 +23,29 @@
 }
 
 /*
+  collect all labels from content
+  - `input`: the content to collect labels from
+  - `output`: an array of label values
+*/
+#let collect-label(label) = {
+  if type(label) != content {
+    return ()
+  }
+
+  for (k, v) in label.fields() {
+    if k == "children" {
+      for child in v {
+        (..collect-label(child))
+      }
+    } else if k == "label" {
+      (str(v), )
+    } else {
+      collect-label(v)
+    }
+  }
+}
+
+/*
   convert content into a list representation
   - `input`:
     - `body`: the content to convert

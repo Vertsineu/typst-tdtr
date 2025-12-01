@@ -2,10 +2,8 @@
 
 #set page(height: auto, width: auto, margin: 1em)
 
-#let root = metadata("root")
-#let mark = metadata("mark")
 #fibonacci-heap-graph[
-  - #root
+  - R <root>
     - 10
       - 11
     - 20
@@ -16,9 +14,9 @@
       - 14
       - 21
         - 25
-      - 5 #mark
+      - 5 <mark>
         - 32
-        - 7 #mark
+        - 7 <mark>
           - 13
     - 9
 ]

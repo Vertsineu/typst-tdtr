@@ -19,6 +19,11 @@
         nil: (post: x => none)
       )
     ),
+    tidy-tree-draws.label-match-draw-node.with(
+      matches: (
+        nil: (post: x => none)
+      )
+    ),
     (stroke: .5pt)
   ),
   draw-edge: (
@@ -26,6 +31,11 @@
     tidy-tree-draws.metadata-match-draw-edge.with(
       to-matches: (
         nil: (post: x => none),
+      )
+    ),
+    tidy-tree-draws.label-match-draw-node.with(
+      to-matches: (
+        nil: (post: x => none)
       )
     ),
     (marks: "-", stroke: .5pt),
@@ -47,6 +57,13 @@
       ),
       default: (fill: color.rgb("#001219"))
     ),
+    tidy-tree-draws.label-match-draw-node.with(
+      matches: (
+        red: (fill: color.rgb("#bb3e03")),
+        nil: (post: x => none)
+      ),
+      default: (fill: color.rgb("#001219"))
+    ),
     ((label, )) => (label: text(color.white)[#label], stroke: none),
   ),
   draw-edge: (
@@ -54,6 +71,11 @@
     tidy-tree-draws.metadata-match-draw-edge.with(
       to-matches: (
         nil: (post: x => none),
+      )
+    ),
+    tidy-tree-draws.label-match-draw-edge.with(
+      to-matches: (
+        nil: (post: x => none)
       )
     ),
     (marks: "-", stroke: .6pt),
@@ -68,6 +90,11 @@
   draw-node: (
     tidy-tree-draws.default-draw-node,
     tidy-tree-draws.metadata-match-draw-node.with(
+      matches: (
+        nil: (post: x => none)
+      )
+    ),
+    tidy-tree-draws.label-match-draw-node.with(
       matches: (
         nil: (post: x => none)
       )
@@ -94,6 +121,11 @@
         nil: (post: x => none),
       )
     ),
+    tidy-tree-draws.label-match-draw-edge.with(
+      to-matches: (
+        nil: (post: x => none)
+      )
+    ),
     (marks: "-", stroke: .5pt),
   )
 )
@@ -117,11 +149,26 @@
           stroke: color.rgb("#001219")
         )
       )
+    ),
+    tidy-tree-draws.label-match-draw-node.with(
+      matches: (
+        root: (post: x => none, pos: (0, 1)),
+        mark: ((label, )) => (
+          label: text(white)[#label], 
+          fill: color.rgb("#001219"), 
+          stroke: color.rgb("#001219")
+        )
+      )
     )
   ),
   draw-edge: (
     tidy-tree-draws.default-draw-edge,
     tidy-tree-draws.metadata-match-draw-edge.with(
+      from-matches: (
+        root: (post: x => none)
+      )
+    ),
+    tidy-tree-draws.label-match-draw-edge.with(
       from-matches: (
         root: (post: x => none)
       )

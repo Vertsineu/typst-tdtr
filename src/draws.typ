@@ -67,6 +67,28 @@
   ret
 }
 
+#let label-match-draw-node = ((name, label, pos), matches: (:), default: (:)) => {
+  let ret = arguments()
+  let matched = false
+  let keys = matches.keys()
+  // check whether any label in node labels matches
+  for key in collect-label(label) {
+    if keys.contains(key) {
+      // support shortcut draw-node
+      let draw-node = shortcut-draw-function(matches.at(key))
+      ret = arguments(..ret, ..draw-node((name: name, label: label, pos: pos)))
+      matched = true
+    }
+  }
+  // default case when no label matches
+  if not matched {
+    let draw-node = shortcut-draw-function(default)
+    ret = arguments(..draw-node((name: name, label: label, pos: pos)))
+  }
+  
+  ret
+}
+
 /// draw a node with specified width and height
 #let size-draw-node = ((name, label, pos), width: auto, height: auto) => {
   (
@@ -134,6 +156,46 @@
   }
 
   // default case when no metadata matches
+  if not matched {
+    let draw-edge = shortcut-draw-function(default)
+    ret = arguments(..ret, ..draw-edge(from-node, to-node, edge-label))
+  }
+
+  ret
+}
+
+#let label-match-draw-edge = (from-node, to-node, edge-label, from-matches: (:), to-matches: (:), matches: (:), default: (:)) => {
+  let ret = arguments()
+  let matched = false
+  let keys = matches.keys()
+  // check whether any label in edge labels matches
+  for key in collect-label(edge-label) {
+    if keys.contains(key) {
+      let draw-edge = shortcut-draw-function(matches.at(key))
+      ret = arguments(..ret, ..draw-edge(from-node, to-node, edge-label))
+      matched = true
+    }
+  }
+  let keys = from-matches.keys()
+  // check whether any label in from node labels matches
+  for key in collect-label(from-node.label) {
+    if keys.contains(key) {
+      let draw-edge = shortcut-draw-function(from-matches.at(key))
+      ret = arguments(..ret, ..draw-edge(from-node, to-node, edge-label))
+      matched = true
+    }
+  }
+  let keys = to-matches.keys()
+  // check whether any label in to node labels matches
+  for key in collect-label(to-node.label) {
+    if keys.contains(key) {
+      let draw-edge = shortcut-draw-function(to-matches.at(key))
+      ret = arguments(..ret, ..draw-edge(from-node, to-node, edge-label))
+      matched = true
+    }
+  }
+
+  // default case when no label matches
   if not matched {
     let draw-edge = shortcut-draw-function(default)
     ret = arguments(..ret, ..draw-edge(from-node, to-node, edge-label))
