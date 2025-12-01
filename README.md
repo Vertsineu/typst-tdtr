@@ -22,6 +22,7 @@ This package uses [fletcher](https://typst.app/universe/package/fletcher) to ren
     - [(extra) Concept of node/edge drawing functions](#extra-concept-of-nodeedge-drawing-functions)
     - [Pre-defined node/edge drawing functions](#pre-defined-nodeedge-drawing-functions)
       - [Default node/edge drawing functions](#default-nodeedge-drawing-functions)
+      - [Label Match node/edge drawing functions](#label-match-nodeedge-drawing-functions)
       - [Metadata Match node/edge drawing functions](#metadata-match-nodeedge-drawing-functions)
       - [Other Pre-defined node/edge drawing functions](#other-pre-defined-nodeedge-drawing-functions)
     - [Custom node/edge drawing functions](#custom-nodeedge-drawing-functions)
@@ -328,24 +329,24 @@ Here is an example of drawing a red-black tree:
 ![red-black](docs/6-red-black-tree.svg)
 
 ```typ
-#let red = metadata("red")
-#let nil = metadata("nil")
 #red-black-tree-graph[
   - M
     - E
-      - N #red
-      - P #red
-    - Q #red
+      - N <red>
+      - P <red>
+    - Q <red>
       - O
-        - N #red
-        - #nil
+        - N <red>
+        - P <nil>
       - Y
-        - X #red
-        - Z #red
+        - X <red>
+        - Z <red>
 ]
 ```
 
-where nodes labeled with `#red` metadata are drawn in red color, and nodes labeled with `#nil` metadata are hidden.
+where nodes labeled with `<red>` are drawn in red color, and nodes labeled with `<nil>` are hidden.
+
+note: To follow Typst syntax, even nodes labeled with `<nil>` will not be shown, you should place a placeholder there, in this example, we use `P` as the placeholder
 
 #### Fibonacci Heap
 
@@ -356,10 +357,8 @@ Here is an example of drawing a Fibonacci heap:
 ![fibonacci-heap](docs/8-fibonacci-heap.svg)
 
 ```typ
-#let root = metadata("root")
-#let mark = metadata("mark")
 #fibonacci-heap-graph[
-  - #root
+  - R <root>
     - 10
       - 11
     - 20
@@ -370,15 +369,18 @@ Here is an example of drawing a Fibonacci heap:
       - 14
       - 21
         - 25
-      - 5 #mark
+      - 5 <mark>
         - 32
-        - 7 #mark
+        - 7 <mark>
           - 13
     - 9
 ]
+
 ```
 
-where nodes labeled with `#root` metadata will be hidden while drawing, same as those edges pointing from them, and nodes labeled with `#mark` metadata will be drawn in black and their text in white.
+where nodes labeled with `<root>` will be hidden while drawing, same as those edges pointing from them, and nodes labeled with `<mark>` will be drawn in black and their text in white.
+
+note: Also to follow Typst syntax, we place a placeholder `R` for the hidden root node
 
 #### Content Tree
 
@@ -496,13 +498,104 @@ Default node and edge drawing functions are defined as follows:
 
 where `default-draw-node` draws every node as a rectangle, and `default-draw-edge` draws every edge with an arrowhead, and if the edge has a label, it will be drawn inside a white box to avoid overlapping with the edge.
 
-#### Metadata Match node/edge drawing functions
+#### Label Match node/edge drawing functions
 
-As you have seen in [Red Black Tree](#binaryb-red-black-tree) example, this package provides some drawing functions that can conveniently label some nodes/edges and customize these labeled nodes/edges using `#metadata`.
+As you have seen in [Red Black Tree](#binaryb-red-black-tree) and [Fibonacci Heap](#fibonacci-heap) examples, this package provides some drawing functions that can conveniently label some nodes/edges and customize these labeled nodes/edges using `#label`.
 
-To make understanding easier, we continue to use the red-black tree example.
+To make understanding easier, we use the [Red Black Tree](#binaryb-red-black-tree) example.
 
 Here is the source code of the pre-defined red-black tree graph drawing function (leaving out not related parts):
+
+```typ
+#let red-black-tree-graph = tidy-tree-graph.with(
+  // ...
+  draw-node: (
+    // ...
+    tidy-tree-draws.label-match-draw-node.with(
+      matches: (
+        red: (fill: color.rgb("#bb3e03")),
+        nil: (post: x => none)
+      ),
+      default: (fill: color.rgb("#001219"))
+    ),
+    // ...
+  ),
+  draw-edge: (
+    // ...
+    tidy-tree-draws.label-match-draw-edge.with(
+      to-matches: (
+        nil: (post: x => none),
+      )
+    ),
+    // ...
+  )
+)
+```
+
+where `label-match-draw-node` and `label-match-draw-edge` are pre-defined label match node/edge drawing functions talked about before.
+
+For `label-match-draw-node`, it has the following signature:
+
+```typ
+(
+  // ...
+  matches: dictionary, 
+  default: dictionary
+) -> arguments | dictionary | array
+```
+
+where `matches` tells the appended arguments to `fletcher.node` for nodes with specific label, and `default` tells the appended arguments to `fletcher.node` for nodes without any matched label.
+
+For example,
+
+- `- N <red>` node is labeled with `<red>`, so `label-match-draw-node` will append `(fill: color.rgb("#bb3e03"))` to the arguments of `fletcher.node` when drawing this node, making it drawn in red color.
+
+- `- P <nil>` node is labeled with `<nil>`, so `label-match-draw-node` will append `(post: x => none)` to the arguments of `fletcher.node` when drawing this node, making it hidden.
+
+- `- E` node is not labeled with any label, so `label-match-draw-node` will append `(fill: color.rgb("#001219"))` to the arguments of `fletcher.node` when drawing this node, making it drawn in black color.
+Similarly, for `label-match-draw-edge`, it has the following signature:
+
+```typ
+(
+  // ...
+  from-matches: dictionary, 
+  to-matches: dictionary, 
+  matches: dictionary,
+  default: dictionary
+) -> arguments | dictionary | array
+```
+
+where `from-matches` tells the appended arguments to `fletcher.edge` for edges whose starting node has specific label, `to-matches` tells the appended arguments to `fletcher.edge` for edges whose ending node has specific label, `matches` tells the appended arguments to `fletcher.edge` for edges themselves with specific label, and `default` tells the appended arguments to `fletcher.edge` for edges themselves, the starting and ending nodes all without any matched label.
+
+#### Metadata Match node/edge drawing functions
+
+However, labels in Typst have some limitations, e.g., you cannot label one node/edge with different labels at the same time, and you must place a placeholder for syntax reasons even if you want to hide a node/edge.
+
+Therefore, we provide a more flexible but slightly complex way to label nodes/edges using `#metadata(...)`, which can label one node/edge with multiple metadata at the same time, and nodes/edges can be hidden without any placeholder.
+
+To make understanding easier, we still use the [Red Black Tree](#binaryb-red-black-tree) example.
+
+If you would like to only use metadata to label nodes/edges, you can modify the previous example as follows:
+
+```typ
+#let red = metadata("red")
+#let nil = metadata("nil")
+#red-black-tree-graph[
+  - M
+    - E
+      - N #red
+      - P #red
+    - Q #red
+      - O
+        - N #red
+        - #nil
+      - Y
+        - X #red
+        - Z #red
+]
+```
+
+And here is the source code of the pre-defined red-black tree graph drawing function (leaving out not related parts):
 
 ```typ
 #let red = metadata("red")
@@ -534,39 +627,7 @@ Here is the source code of the pre-defined red-black tree graph drawing function
 
 where `metadata-match-draw-node` and `metadata-match-draw-edge` are pre-defined metadata match node/edge drawing functions talked about before.
 
-For `metadata-match-draw-node`, it has the following signature:
-
-```typ
-(
-  // ...
-  matches: dictionary, 
-  default: dictionary
-) -> arguments | dictionary | array
-```
-
-where `matches` tells the appended arguments to `fletcher.node` for nodes with specific metadata, and `default` tells the appended arguments to `fletcher.node` for nodes without any matched metadata.
-
-For example,
-
-- `- N #red` node is labeled with `#metadata("red")`, so `metadata-match-draw-node` will append `(fill: color.rgb("#bb3e03"))` to the arguments of `fletcher.node` when drawing this node, making it drawn in red color.
-
-- `- #nil` node is labeled with `#metadata("nil")`, so `metadata-match-draw-node` will append `(post: x => none)` to the arguments of `fletcher.node` when drawing this node, making it hidden.
-
-- `- E` node is not labeled with any metadata, so `metadata-match-draw-node` will append `(fill: color.rgb("#001219"))` to the arguments of `fletcher.node` when drawing this node, making it drawn in black color.
-
-Similarly, for `metadata-match-draw-edge`, it has the following signature:
-
-```typ
-(
-  // ...
-  from-matches: dictionary, 
-  to-matches: dictionary, 
-  matches: dictionary,
-  default: dictionary
-) -> arguments | dictionary | array
-```
-
-where `from-matches` tells the appended arguments to `fletcher.edge` for edges whose starting node has specific metadata, `to-matches` tells the appended arguments to `fletcher.edge` for edges whose ending node has specific metadata, `matches` tells the appended arguments to `fletcher.edge` for edges themselves with specific metadata, and `default` tells the appended arguments to `fletcher.edge` for edges themselves, the starting and ending nodes all without any matched metadata.
+Same as `label-match-draw-node` and `label-match-draw-edge`, `metadata-match-draw-node` and `metadata-match-draw-edge` have the same signatures respectively, but they match nodes/edges using metadata instead of labels, so details are omitted here.
 
 #### Other Pre-defined node/edge drawing functions
 
