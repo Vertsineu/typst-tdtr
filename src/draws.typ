@@ -99,7 +99,7 @@
 
 /// draw a node as a circle
 #let circle-draw-node = ((name, label, pos)) => {
-  default-draw-node((name, label, pos)) + (
+  (
     shape: circle
   )
 }

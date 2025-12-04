@@ -698,17 +698,16 @@
   )
 
   // compose multiple draw-node functions if needed
-  let draw-node = if type(draw-node) == array {
-    tidy-tree-draws.sequential-draw-function(size-draw-node, ..draw-node)
-  } else {
-    tidy-tree-draws.sequential-draw-function(size-draw-node, draw-node)
-  }
+  let draw-node = tidy-tree-draws.sequential-draw-function(
+    size-draw-node, // place size draw-node at the front to make it able to be overridden
+    default-draw-node,
+    ..(draw-node, ).flatten()
+  )
   // compose multiple draw-edge functions if needed
-  let draw-edge = if type(draw-edge) == array {
-    tidy-tree-draws.sequential-draw-function(..draw-edge)
-  } else {
-    draw-edge
-  }
+  let draw-edge = tidy-tree-draws.sequential-draw-function(
+    default-draw-edge,
+    ..(draw-edge, ).flatten()
+  )
 
   // generate elements
   let (elements, nodes) = tidy-tree-elements(tree, xs, tree-edges, draw-node, draw-edge, compact: compact)
@@ -723,11 +722,10 @@
   )
 
   // compose multiple additional-draw functions if needed
-  let additional-draw = if type(additional-draw) == array {
-    tidy-tree-draws.sequential-draw-function(..additional-draw)
-  } else {
-    additional-draw
-  }
+  let additional-draw = tidy-tree-draws.sequential-draw-function(
+    default-additional-draw,
+    ..(additional-draw, ).flatten()
+  )
 
   // wrap element functions and pass it to addition draw
   let element-func = (

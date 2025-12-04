@@ -27,7 +27,6 @@
     (stroke: .5pt)
   ),
   draw-edge: (
-    tidy-tree-draws.default-draw-edge,
     tidy-tree-draws.metadata-match-draw-edge.with(
       to-matches: (
         nil: (post: x => none),
@@ -67,7 +66,6 @@
     ((label, )) => (label: text(color.white)[#label], stroke: none),
   ),
   draw-edge: (
-    tidy-tree-draws.default-draw-edge,
     tidy-tree-draws.metadata-match-draw-edge.with(
       to-matches: (
         nil: (post: x => none),
@@ -115,7 +113,6 @@
     (stroke: .5pt, shape: shapes.pill)
   ),
   draw-edge: (
-    tidy-tree-draws.default-draw-edge,
     tidy-tree-draws.metadata-match-draw-edge.with(
       to-matches: (
         nil: (post: x => none),
@@ -162,7 +159,6 @@
     )
   ),
   draw-edge: (
-    tidy-tree-draws.default-draw-edge,
     tidy-tree-draws.metadata-match-draw-edge.with(
       from-matches: (
         root: (post: x => none)
