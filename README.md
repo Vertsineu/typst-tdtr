@@ -28,6 +28,7 @@ This package uses [fletcher](https://typst.app/universe/package/fletcher) to ren
     - [Custom node/edge drawing functions](#custom-nodeedge-drawing-functions)
     - [Shortcut node/edge drawing functions](#shortcut-nodeedge-drawing-functions)
     - [Additional drawing functions](#additional-drawing-functions)
+    - [(extra) Examples of Customization](#extra-examples-of-customization)
   - [API Reference](#api-reference)
 
 ## Getting Started
@@ -498,6 +499,8 @@ Default node and edge drawing functions are defined as follows:
 
 where `default-draw-node` draws every node as a rectangle, and `default-draw-edge` draws every edge with an arrowhead, and if the edge has a label, it will be drawn inside a white box to avoid overlapping with the edge.
 
+note: `default-draw-node` and `default-draw-edge` are always applied first before other drawing functions when drawing nodes and edges respectively, so you don't need to specify them explicitly.
+
 #### Label Match node/edge drawing functions
 
 As you have seen in [Red Black Tree](#binaryb-red-black-tree) and [Fibonacci Heap](#fibonacci-heap) examples, this package provides some drawing functions that can conveniently label some nodes/edges and customize these labeled nodes/edges using `#label`.
@@ -710,7 +713,6 @@ For convenience, if your node/edge drawing functions do not use any arguments pr
 #tidy-tree-graph(
   // ...
   draw-node: (
-    tidy-tree-draws.default-draw-node,
     ((label, )) => (label: text(blue)[#label]),
     tidy-tree-draws.metadata-match-draw-node.with(
       matches: (
@@ -719,7 +721,6 @@ For convenience, if your node/edge drawing functions do not use any arguments pr
     )
   ),
   draw-edge: (
-    tidy-tree-draws.default-draw-edge,
     (..) => (marks: "-o", stroke: color.red),
     tidy-tree-draws.metadata-match-draw-edge.with(
       to-matches: (
@@ -736,7 +737,6 @@ abbreviates to
 #tidy-tree-graph(
   // ...
   draw-node: (
-    tidy-tree-draws.default-draw-node,
     ((label, )) => (label: text(blue)[#label]),
     tidy-tree-draws.metadata-match-draw-node.with(
       matches: (
@@ -745,7 +745,6 @@ abbreviates to
     )
   ),
   draw-edge: (
-    tidy-tree-draws.default-draw-edge,
     (marks: "-o", stroke: color.red),
     tidy-tree-draws.metadata-match-draw-edge.with(
       to-matches: (
@@ -800,6 +799,42 @@ For example, in the pre-defined fibonacci heap graph drawing function, we use an
 ```
 
 where the additional drawing function first finds all root nodes, namely nodes in level 1, then connects every two adjacent root nodes using a dashed edge.
+
+### (extra) Examples of Customization
+
+A quite simple example:
+
+```typ
+#tidy-tree-graph(
+  draw-node: (stroke: .5pt + red),
+  draw-edge: (stroke: .5pt + blue, marks: "-")
+)[
+  // ...
+]
+```
+
+which draws all nodes with red border and all edges with blue solid lines without arrowheads.
+
+A little complex example:
+
+```typ
+#tidy-tree-graph(
+  draw-node: (
+    ((label, )) => (label: text(blue)[#label]),
+    (shape: circle, fill: yellow)
+  ),
+  draw-edge: (
+    (.., edge-label) => if edge-label != none { (label: text(green)[#edge-label]) },
+    (marks: "-o", stroke: color.red),
+  )
+)[
+  // ...
+]
+```
+
+which draws all nodes as yellow circles with blue text, and all edges with red lines and circle marks, and if the edge has a label, it will be drawn in green text.
+
+For more complex examples, you can see the implementations of pre-defined graph drawing functions in `src/presets.typ`, such as `red-black-tree-graph` and `fibonacci-heap-graph`.
 
 ## API Reference
 
