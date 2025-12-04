@@ -1,4 +1,4 @@
-#import "@preview/tdtr:0.4.1": *
+#import "@preview/tdtr:0.4.2": *
 
 #set page(height: auto, width: auto, margin: 1em)
 
