@@ -36,7 +36,7 @@ This package uses [fletcher](https://typst.app/universe/package/fletcher) to ren
 Import the package using:
 
 ```typ
-#import "@preview/tdtr:0.4.2": *
+#import "@preview/tdtr:0.4.2" : *
 ```
 
 ### From list

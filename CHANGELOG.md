@@ -1,3 +1,12 @@
+## [0.4.2](https://github.com/Vertsineu/typst-tdtr/compare/v0.4.1...v0.4.2) (2025-12-04)
+
+
+### Bug Fixes
+
+* fix wrong function name ([e2699e2](https://github.com/Vertsineu/typst-tdtr/commit/e2699e2771afeb74c51d6aebf37530f90de93588))
+
+
+
 # [0.4.1](https://github.com/Vertsineu/typst-tdtr/compare/v0.4.0...v0.4.1) (2025-12-01)
 
 
