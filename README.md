@@ -634,12 +634,19 @@ Same as `label-match-draw-node` and `label-match-draw-edge`, `metadata-match-dra
 
 #### Other Pre-defined node/edge drawing functions
 
-other node and edge drawing functions include but not limited to:
+There are also some other pre-defined node/edge drawing functions for specific drawing effects.
+
+For nodes:
 
 - `circle-draw-node`: draw every node as a circle
 - `horizontal-draw-node`: draw the tree in horizontal direction
+- `hidden-draw-node`: draw a hidden node but affecting the layout
+
+For edges:
+
 - `reversed-draw-edge`: draw every edge in reversed direction
 - `horizontal-vertical-draw-edge`: draw every edge in a horizontal-vertical manner
+- `hidden-draw-edge`: draw a hidden edge
 
 ### Custom node/edge drawing functions
 

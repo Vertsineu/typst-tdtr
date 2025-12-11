@@ -111,6 +111,13 @@
   )
 }
 
+/// draw a hidden node but affecting the layout
+#let hidden-draw-node = ((name, label, pos)) => {
+  (
+    post: x => none
+  )
+}
+
 /// **************************************
 /// draw-edge functions
 /// **************************************
@@ -239,6 +246,13 @@
       label: edge-label
     )
   }
+}
+
+/// draw a hidden edge
+#let hidden-draw-edge = (from-node, to-node, edge-label) => {
+  (
+    post: x => none
+  )
 }
 
 /// **************************************
