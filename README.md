@@ -637,6 +637,7 @@ Same as `label-match-draw-node` and `label-match-draw-edge`, `metadata-match-dra
 other node and edge drawing functions include but not limited to:
 
 - `circle-draw-node`: draw every node as a circle
+- `horizontal-draw-node`: draw the tree in horizontal direction
 - `reversed-draw-edge`: draw every edge in reversed direction
 - `horizontal-vertical-draw-edge`: draw every edge in a horizontal-vertical manner
 

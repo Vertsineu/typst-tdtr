@@ -104,6 +104,13 @@
   )
 }
 
+/// draw the tree in horizontal direction
+#let horizontal-draw-node = ((name, label, pos)) => {
+  (
+    pos: (pos.i, pos.x)
+  )
+}
+
 /// **************************************
 /// draw-edge functions
 /// **************************************
