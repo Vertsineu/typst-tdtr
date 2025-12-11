@@ -1,3 +1,13 @@
+# [0.4.3](https://github.com/Vertsineu/typst-tdtr/compare/v0.4.2...v0.4.3) (2025-12-11)
+
+
+### Features
+
+* add `horizontal-draw-node` function ([a05e967](https://github.com/Vertsineu/typst-tdtr/commit/a05e967f449c422fc5444d2b706d160e20413810))
+* add hidden drawing functions ([1b9cc4b](https://github.com/Vertsineu/typst-tdtr/commit/1b9cc4bc5121fb9f74e0c15f1992b17232f3556c))
+
+
+
 # [0.4.2](https://github.com/Vertsineu/typst-tdtr/compare/v0.4.1...v0.4.2) (2025-12-04)
 
 
