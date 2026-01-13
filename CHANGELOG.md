@@ -1,4 +1,13 @@
-# [0.4.3](https://github.com/Vertsineu/typst-tdtr/compare/v0.4.2...v0.4.3) (2025-12-11)
+# [0.4.4](https://github.com/Vertsineu/typst-tdtr/compare/v0.4.3...v0.4.4) (2026-01-13)
+
+
+### Bug Fixes
+
+* wrong parse when std.table and std.grid as leaf node ([4f0f8c6](https://github.com/Vertsineu/typst-tdtr/commit/4f0f8c618d00c5dacfd70be715f4240dc83121a9)), closes [#4](https://github.com/Vertsineu/typst-tdtr/issues/4)
+
+
+
+## [0.4.3](https://github.com/Vertsineu/typst-tdtr/compare/v0.4.2...v0.4.3) (2025-12-11)
 
 
 ### Features
@@ -8,7 +17,7 @@
 
 
 
-# [0.4.2](https://github.com/Vertsineu/typst-tdtr/compare/v0.4.1...v0.4.2) (2025-12-04)
+## [0.4.2](https://github.com/Vertsineu/typst-tdtr/compare/v0.4.1...v0.4.2) (2025-12-04)
 
 
 ### Bug Fixes
@@ -17,7 +26,7 @@
 
 
 
-# [0.4.1](https://github.com/Vertsineu/typst-tdtr/compare/v0.4.0...v0.4.1) (2025-12-01)
+## [0.4.1](https://github.com/Vertsineu/typst-tdtr/compare/v0.4.0...v0.4.1) (2025-12-01)
 
 
 ### Bug Fixes
