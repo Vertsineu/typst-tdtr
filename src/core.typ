@@ -157,6 +157,12 @@
       return (title: body, children: ())
     }
 
+    // exclude std.table, std.grid, etc.
+    // although they have children, we do not want to unfold them
+    if body.func() in dictionary(std).values() {
+      return (title: body, children: ())
+    }
+
     let is-list-item(child) = child.func() == std.list.item
     let is-enum-item(child) = child.func() == std.enum.item
     body.children
@@ -317,6 +323,12 @@
   // cast a list or enum to a tree structure
   let collect-tree-edges(body, title: none) = {
     if not body.has("children") {
+      return (title: title, children: ())
+    }
+
+    // exclude std.table, std.grid, etc.
+    // although they have children, we do not want to unfold them
+    if body.func() in dictionary(std).values() {
       return (title: title, children: ())
     }
 
