@@ -489,7 +489,8 @@ Default node and edge drawing functions are defined as follows:
   )
   if edge-label != none {
     (
-      label: box(fill: white, inset: 2pt)[#edge-label], 
+      label: [#edge-label], 
+      label-fill: white,
       label-sep: 0pt, 
       label-anchor: "center"
     )
