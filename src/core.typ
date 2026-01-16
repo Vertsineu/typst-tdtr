@@ -657,6 +657,8 @@
       - Note: this is not the argument of `fletcher.diagram`, only supported in this function
     - `spacing`: horizontal and vertical spacing between nodes, default to (5pt, 10pt)
     - `edge-corner-radius`: corner radius of the edge, default to none
+    - `wrapper`: only for wrapper use, never set it manually
+      - if true, will return the drawing functions directly instead of drawing the tree
     - `..args`: other arguments for `fletcher.diagram`
   - output:
     - `ret`: a tidy tree drawing
@@ -676,8 +678,14 @@
   node-height: auto,
   spacing: (6pt, 15pt),
   edge-corner-radius: none,
+  wrapper: false,
   ..args,
 ) = {
+  // if for wrapper use, return the drawing functions directly
+  if wrapper {
+    return (draw-node, draw-edge, additional-draw)
+  }
+
   let tree = if type(body) == content {
     tidy-tree-from-list(body)
   } else if type(body) == dictionary {
@@ -747,4 +755,54 @@
 
   set text(size: text-size)
   fletcher.diagram(..args, ..elements, ..additional-draw(nodes, element-func))
+}
+
+/*
+  wrap a tree graph function to append additional drawing functions
+  - input:
+    - `tree-graph-fn`: a base tree graph function to be wrapped, default to `tidy-tree-graph`
+    - `draw-node`: a single or an array of functions for drawing a node, default to no additional drawing
+      - see `tidy-tree-elements` for the format of every function
+    - `draw-edge`: a single or an array of functions for drawing an edge, default to no additional drawing
+      - see `tidy-tree-elements` for the format of every function
+    - `additional-draw`: a single or an array of functions for drawing additional elements after drawing the tree, default to no additional drawing
+      - see `tidy-tree-graph` for the format of every function
+  - output:
+    - `ret`: a wrapped tree graph function with additional drawing functions
+*/
+#let tree-graph-wrapper(
+  tree-graph-fn: tidy-tree-graph,
+  draw-node: none,
+  draw-edge: none,
+  additional-draw: none,
+  
+  ..args
+) = {
+  // get the original drawing functions from tree-graph-fn
+  let (draw-node-orig, draw-edge-orig, additional-draw-orig) = tree-graph-fn(
+    wrapper: true
+  )[]
+
+  tree-graph-fn.with(
+    draw-node: tidy-tree-draws.sequential-draw-function(
+      ..(
+        draw-node-orig,
+        if draw-node != none { draw-node } else { () }
+      ).flatten(),
+    ),
+    draw-edge: tidy-tree-draws.sequential-draw-function(
+      ..(
+        draw-edge-orig, 
+        if draw-edge != none { draw-edge } else { () }
+      ).flatten(),
+    ),
+    additional-draw: tidy-tree-draws.sequential-draw-function(
+      ..(
+        additional-draw-orig, 
+        if additional-draw != none { additional-draw } else { () }
+      ).flatten(),
+    ),
+
+    ..args
+  )
 }
