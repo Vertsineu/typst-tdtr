@@ -14,22 +14,23 @@ This package uses [fletcher](https://typst.app/universe/package/fletcher) to ren
       - [JSON](#json)
       - [YAML](#yaml)
       - [(extra) Forbidden Structure](#extra-forbidden-structure)
-  - [Customization](#customization)
+  - [Customization Examples](#customization-examples)
     - [Pre-defined graph drawing functions](#pre-defined-graph-drawing-functions)
       - [Binary/B-/Red-Black Tree](#binaryb-red-black-tree)
       - [Fibonacci Heap](#fibonacci-heap)
       - [Content Tree](#content-tree)
       - [Fine-tune](#fine-tune)
-    - [(extra) Concept of node/edge drawing functions](#extra-concept-of-nodeedge-drawing-functions)
+    - [Custom graph drawing functions](#custom-graph-drawing-functions)
+  - [All about Customization](#all-about-customization)
+    - [Concept of node/edge drawing functions](#concept-of-nodeedge-drawing-functions)
+    - [Signature of node/edge drawing functions](#signature-of-nodeedge-drawing-functions)
+    - [Shortcut node/edge drawing functions](#shortcut-nodeedge-drawing-functions)
     - [Pre-defined node/edge drawing functions](#pre-defined-nodeedge-drawing-functions)
       - [Default node/edge drawing functions](#default-nodeedge-drawing-functions)
       - [Label Match node/edge drawing functions](#label-match-nodeedge-drawing-functions)
       - [Metadata Match node/edge drawing functions](#metadata-match-nodeedge-drawing-functions)
       - [Other Pre-defined node/edge drawing functions](#other-pre-defined-nodeedge-drawing-functions)
-    - [Custom node/edge drawing functions](#custom-nodeedge-drawing-functions)
-    - [Shortcut node/edge drawing functions](#shortcut-nodeedge-drawing-functions)
     - [Additional drawing functions](#additional-drawing-functions)
-    - [(extra) Examples of Customization](#extra-examples-of-customization)
   - [API Reference](#api-reference)
 
 ## Getting Started
@@ -302,15 +303,16 @@ app:
       - D  # this structure is supported
     ```
 
-## Customization
+## Customization Examples
 
 You might think the default drawing style is not suitable for your case, and you can customize it by either
 
 - using pre-defined graph drawing functions and fine-tuning them
-- passing pre-defined/custom node/edge drawing functions
-- or add additional nodes and edges for specially customized graphs
+- defining your own custom graph drawing functions from scratch
 
 when creating the tidy tree.
+
+To make you not confused, we will display some customization examples here but not cover all details, and if you want to know more details about customization and more comprehensive understanding of how customization works, please see [All about Customization](#all-about-customization) section.
 
 ### Pre-defined graph drawing functions
 
@@ -455,9 +457,78 @@ Here is an example of fine-tuning the binary tree graph drawing function to a hu
 
 where we remove the stroke of every node and cast the label of every node to math mode, and draw every edge with the index of the child node among its siblings as the edge label, namely the huffman code bit.
 
-### (extra) Concept of node/edge drawing functions
+### Custom graph drawing functions
 
-Before introducing node/edge drawing functions, let's first understand the concept of node/edge drawing functions.
+You can also define your own graph drawing functions from scratch by specifying custom node and edge drawing functions.
+
+A quite simple example:
+
+![custom-tree](docs/11-custom-tree.svg)
+
+```typ
+#let custom-tree-graph = tidy-tree-graph.with(
+  draw-node: (stroke: .5pt + red),
+  draw-edge: (stroke: .5pt + blue, marks: "-}>"),
+  spacing: (15pt, 20pt),
+  node-width: 2em,
+  node-height: 3em
+)
+#custom-tree-graph[
+  - A
+    - B
+      - D
+      - E
+    - C
+      - F
+      - G
+]
+```
+
+which draws all nodes with red border and all edges with blue solid lines with custom arrowheads.
+
+A little complex example:
+
+![tidy-tree-graph](docs/12-custom-tree-complex.svg)
+
+```typ
+#let custom-tree-graph = tidy-tree-graph.with(
+  draw-node: (
+    ((label, )) => (label: text(blue)[#label]),
+    (shape: circle, fill: yellow),
+    (width: 2em)
+  ),
+  draw-edge: (
+    (.., edge-label) => if edge-label != none { (label: text(green)[#edge-label]) },
+    (marks: "|-o", stroke: color.red + .5pt),
+  ),
+  spacing: (15pt, 25pt)
+)
+#custom-tree-graph[
+  - A
+    + 1
+    - B
+      + 2
+      - D
+      - E
+    + 3
+    - C
+      + 4
+      - F
+      - G
+]
+```
+
+which draws all nodes as yellow circles with blue text, and all edges with red lines and circle marks, and if the edge has a label, it will be drawn in green text.
+
+For more complex examples, you can see the implementations of pre-defined graph drawing functions in `src/presets.typ`, such as `red-black-tree-graph` and `fibonacci-heap-graph`.
+
+## All about Customization
+
+After seeing the previous examples, you may have found that `draw-node` and `draw-edge` are the keys to customize the drawing of nodes and edges respectively. Actually, they are indeed the most important parts when customizing the drawing of tidy trees and they are called **node/edge drawing functions** in this package.
+
+### Concept of node/edge drawing functions
+
+Before diving into the details of node/edge drawing functions, let's first clarify some concepts about them.
 
 - First, all node/edge drawing functions are ended with `-draw-node` and `-draw-edge` respectively.
 
@@ -511,6 +582,121 @@ Before introducing node/edge drawing functions, let's first understand the conce
   ```
 
   If `custom-2-draw-node` returns an argument that conflicts with the argument returned by `custom-1-draw-node`, the argument returned by `custom-2-draw-node` will override the previous one.
+
+### Signature of node/edge drawing functions
+
+Now let's see the detailed signatures of node and edge drawing functions.
+
+For `draw-node`, the function should have the following signature:
+
+```typ
+(
+  // positional arguments
+  node: (
+    name: label, 
+    label: any, 
+    pos: (
+      i: int, 
+      j: int, 
+      k: int, 
+      x: int | float
+    ),
+  )
+  // other optional named arguments
+) -> arguments | dictionary | array
+```
+
+where
+
+- `name`: the unique label of the node, used for drawing edge, should not be changed, and should be used only by `fletcher.node(..., name: name, ...)`
+- `label`: the content of the node, if the tree is from list, it's `content` type; if the tree is from file, it's `str` type, default used by `fletcher.node(..., label: [#label], ...)`
+- `pos`: a tuple representing the position of the node in the tree, where `i` is the depth of the node, `j` is the index of the parent node in `i - 1` level, `k` is the index of the node among its siblings, and `x` is the x-coordinate of the node after horizontal compression, used for positioning the node, default used by `fletcher.node(..., pos: (x, i), ...)`. Specially, the `(i, j, k)` of the root node is `(0, 0, 0)`.
+
+For `draw-edge`, the function should have the following signature:
+
+```typ
+(
+  // positional arguments
+  from-node: (
+    name: label, 
+    label: any, 
+    pos: (
+      i: int, 
+      j: int, 
+      k: int, 
+      x: int | float
+    )
+  ), 
+  to-node: (
+    name: label, 
+    label: any, 
+    pos: (
+      i: int, 
+      j: int, 
+      k: int, 
+      x: int | float
+    )
+  ), 
+  edge-label: any,
+  // other optional named arguments
+) -> arguments | dictionary | array
+```
+
+where
+
+- `from-node`: a tuple representing the starting node of the edge, with the same structure as the parameters of `draw-node`
+- `to-node`: a tuple representing the ending node of the edge, with the same structure as the parameters of `draw-node`
+- `edge-label`: the label of the edge, if the edge has no label, it's `none`.
+
+### Shortcut node/edge drawing functions
+
+For convenience, if your node/edge drawing functions do not use any arguments provided, you can abbreviate your custom node/edge drawing functions to only the return value, e.g.,
+
+```typ
+#tidy-tree-graph(
+  // ...
+  draw-node: (
+    ((label, )) => (label: text(blue)[#label]),
+    tidy-tree-draws.metadata-match-draw-node.with(
+      matches: (
+        root: (..) => (shape: circle, fill: color.red)
+      )
+    )
+  ),
+  draw-edge: (
+    (..) => (marks: "-o", stroke: color.red),
+    tidy-tree-draws.metadata-match-draw-edge.with(
+      to-matches: (
+        leaf: (..) => (marks: "->", stroke: color.green)
+      )
+    ),
+  )
+)
+```
+
+abbreviates to
+
+```typ
+#tidy-tree-graph(
+  // ...
+  draw-node: (
+    ((label, )) => (label: text(blue)[#label]),
+    tidy-tree-draws.metadata-match-draw-node.with(
+      matches: (
+        root: (shape: circle, fill: color.red)
+      )
+    )
+  ),
+  draw-edge: (
+    (marks: "-o", stroke: color.red),
+    tidy-tree-draws.metadata-match-draw-edge.with(
+      to-matches: (
+        leaf: (marks: "->", stroke: color.green)
+      )
+    ),
+  )
+)
+```
 
 ### Pre-defined node/edge drawing functions
 
@@ -701,121 +887,6 @@ For edges:
 - `horizontal-vertical-draw-edge`: draw every edge in a horizontal-vertical manner
 - `hidden-draw-edge`: draw a hidden edge
 
-### Custom node/edge drawing functions
-
-You can also define your own node/edge drawing functions from scratch.
-
-For `draw-node`, the function should have the following signature:
-
-```typ
-(
-  // positional arguments
-  node: (
-    name: label, 
-    label: any, 
-    pos: (
-      i: int, 
-      j: int, 
-      k: int, 
-      x: int | float
-    ),
-  )
-  // other optional named arguments
-) -> arguments | dictionary | array
-```
-
-where
-
-- `name`: the unique label of the node, used for drawing edge, should not be changed, and should be used only by `fletcher.node(..., name: name, ...)`
-- `label`: the content of the node, if the tree is from list, it's `content` type; if the tree is from file, it's `str` type, default used by `fletcher.node(..., label: [#label], ...)`
-- `pos`: a tuple representing the position of the node in the tree, where `i` is the depth of the node, `j` is the index of the parent node in `i - 1` level, `k` is the index of the node among its siblings, and `x` is the x-coordinate of the node after horizontal compression, used for positioning the node, default used by `fletcher.node(..., pos: (x, i), ...)`. Specially, the `(i, j, k)` of the root node is `(0, 0, 0)`.
-
-For `draw-edge`, the function should have the following signature:
-
-```typ
-(
-  // positional arguments
-  from-node: (
-    name: label, 
-    label: any, 
-    pos: (
-      i: int, 
-      j: int, 
-      k: int, 
-      x: int | float
-    )
-  ), 
-  to-node: (
-    name: label, 
-    label: any, 
-    pos: (
-      i: int, 
-      j: int, 
-      k: int, 
-      x: int | float
-    )
-  ), 
-  edge-label: any,
-  // other optional named arguments
-) -> arguments | dictionary | array
-```
-
-where
-
-- `from-node`: a tuple representing the starting node of the edge, with the same structure as the parameters of `draw-node`
-- `to-node`: a tuple representing the ending node of the edge, with the same structure as the parameters of `draw-node`
-- `edge-label`: the label of the edge, if the edge has no label, it's `none`.
-
-### Shortcut node/edge drawing functions
-
-For convenience, if your node/edge drawing functions do not use any arguments provided, you can abbreviate your custom node/edge drawing functions to only the return value, e.g.,
-
-```typ
-#tidy-tree-graph(
-  // ...
-  draw-node: (
-    ((label, )) => (label: text(blue)[#label]),
-    tidy-tree-draws.metadata-match-draw-node.with(
-      matches: (
-        root: (..) => (shape: circle, fill: color.red)
-      )
-    )
-  ),
-  draw-edge: (
-    (..) => (marks: "-o", stroke: color.red),
-    tidy-tree-draws.metadata-match-draw-edge.with(
-      to-matches: (
-        leaf: (..) => (marks: "->", stroke: color.green)
-      )
-    ),
-  )
-)
-```
-
-abbreviates to
-
-```typ
-#tidy-tree-graph(
-  // ...
-  draw-node: (
-    ((label, )) => (label: text(blue)[#label]),
-    tidy-tree-draws.metadata-match-draw-node.with(
-      matches: (
-        root: (shape: circle, fill: color.red)
-      )
-    )
-  ),
-  draw-edge: (
-    (marks: "-o", stroke: color.red),
-    tidy-tree-draws.metadata-match-draw-edge.with(
-      to-matches: (
-        leaf: (marks: "->", stroke: color.green)
-      )
-    ),
-  )
-)
-```
-
 ### Additional drawing functions
 
 If you would like to add some other nodes/edges to the final diagram, you can pass an additional drawing function to `additional-draw` parameter of `tidy-tree-graph`, and similar to `draw-node` and `draw-edge`, array of drawing functions and shortcut drawing functions are also supported.
@@ -861,42 +932,6 @@ For example, in the pre-defined fibonacci heap graph drawing function, we use an
 
 where the additional drawing function first finds all root nodes, namely nodes in level 1, then connects every two adjacent root nodes using a dashed edge.
 
-### (extra) Examples of Customization
-
-A quite simple example:
-
-```typ
-#tidy-tree-graph(
-  draw-node: (stroke: .5pt + red),
-  draw-edge: (stroke: .5pt + blue, marks: "-")
-)[
-  // ...
-]
-```
-
-which draws all nodes with red border and all edges with blue solid lines without arrowheads.
-
-A little complex example:
-
-```typ
-#tidy-tree-graph(
-  draw-node: (
-    ((label, )) => (label: text(blue)[#label]),
-    (shape: circle, fill: yellow)
-  ),
-  draw-edge: (
-    (.., edge-label) => if edge-label != none { (label: text(green)[#edge-label]) },
-    (marks: "-o", stroke: color.red),
-  )
-)[
-  // ...
-]
-```
-
-which draws all nodes as yellow circles with blue text, and all edges with red lines and circle marks, and if the edge has a label, it will be drawn in green text.
-
-For more complex examples, you can see the implementations of pre-defined graph drawing functions in `src/presets.typ`, such as `red-black-tree-graph` and `fibonacci-heap-graph`.
-
 ## API Reference
 
 The main function provided by this package is `tidy-tree-graph`, which has the following signature:
@@ -935,6 +970,10 @@ The main function provided by this package is `tidy-tree-graph`, which has the f
   node-width: auto,
   node-height: auto,
 
+  // only used for tree-graph-wrapper,
+  // please do not use it
+  wrapper: false,
+
   // passed to `fletcher.diagram`
   node-stroke: 0.25pt,
   node-inset: 3pt,
@@ -942,4 +981,21 @@ The main function provided by this package is `tidy-tree-graph`, which has the f
   edge-corner-radius: none,
   ..args,
 ) -> fletcher.diagram
+```
+
+The auxiliary function `tree-graph-wrapper` is used to create a new graph drawing function based on an existing one, which has the following signature:
+
+```typ
+(
+  // the existing tree graph drawing function
+  tree-graph-fn: tidy-tree-graph,
+
+  // if specified, append these drawing functions to the existing ones
+  draw-node: none,
+  draw-edge: none,
+  additional-draw: none,
+  
+  // other parameters passed to `tidy-tree-graph`
+  ..args
+) -> tidy-tree-graph
 ```
