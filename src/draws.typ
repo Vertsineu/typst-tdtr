@@ -9,7 +9,7 @@
   } else if typ == arguments or typ == dictionary or typ == array {
     return (..) => draw-function
   } else {
-    error("Invalid draw-function type: " + str(typ))
+    panic("Invalid draw-function type: " + str(typ))
   }
 }
 
