@@ -1,4 +1,4 @@
-#import "@preview/tdtr:0.4.4": *
+#import "@preview/tdtr:0.5.0": *
 
 #set page(height: auto, width: auto, margin: 1em)
 #show: scale.with(125%, reflow: true)
@@ -8,7 +8,7 @@
   draw-edge: (stroke: .5pt + blue, marks: "-}>"),
   spacing: (15pt, 20pt),
   node-width: 2em,
-  node-height: 3em
+  node-height: 3em,
 )
 #custom-tree-graph[
   - A

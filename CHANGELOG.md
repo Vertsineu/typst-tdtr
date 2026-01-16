@@ -1,4 +1,18 @@
-# [0.4.4](https://github.com/Vertsineu/typst-tdtr/compare/v0.4.3...v0.4.4) (2026-01-13)
+# [0.5.0](https://github.com/Vertsineu/typst-tdtr/compare/v0.4.4...v0.5.0) (2026-01-16)
+
+
+### Bug Fixes
+
+* use panic instead of error ([f39f88b](https://github.com/Vertsineu/typst-tdtr/commit/f39f88bda2e421c1a86e0477c72a2f0aac3b6869))
+
+
+### Features
+
+* support append additional drawing functions to pre-defined graph drawing functions ([ef7bbaf](https://github.com/Vertsineu/typst-tdtr/commit/ef7bbaf6783bbe626f77eb9c68864659dd4ffbc3))
+
+
+
+## [0.4.4](https://github.com/Vertsineu/typst-tdtr/compare/v0.4.3...v0.4.4) (2026-01-13)
 
 
 ### Bug Fixes
