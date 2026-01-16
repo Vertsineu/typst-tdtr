@@ -19,6 +19,7 @@ This package uses [fletcher](https://typst.app/universe/package/fletcher) to ren
       - [Binary/B-/Red-Black Tree](#binaryb-red-black-tree)
       - [Fibonacci Heap](#fibonacci-heap)
       - [Content Tree](#content-tree)
+      - [Fine-tune](#fine-tune)
     - [(extra) Concept of node/edge drawing functions](#extra-concept-of-nodeedge-drawing-functions)
     - [Pre-defined node/edge drawing functions](#pre-defined-nodeedge-drawing-functions)
       - [Default node/edge drawing functions](#default-nodeedge-drawing-functions)
@@ -305,7 +306,7 @@ app:
 
 You might think the default drawing style is not suitable for your case, and you can customize it by either
 
-- using pre-defined graph drawing functions
+- using pre-defined graph drawing functions and fine-tuning them
 - passing pre-defined/custom node/edge drawing functions
 - or add additional nodes and edges for specially customized graphs
 
@@ -324,6 +325,28 @@ This package provides some graph drawing functions for common tree types as the 
 - `binary-tree-graph`: suitable for the trees whose nodes and edges have simple and short content, e.g., a binary tree
 - `red-black-tree-graph`: specialized for red-black trees, with color-coded nodes and hidden nil edges
 - `b-tree-graph`: suitable for the trees whose node are relatively not short, e.g., B-trees
+
+Here is an example of drawing a binary tree:
+
+![binary](docs/9-binary-tree.svg)
+
+```typ
+#binary-tree-graph[
+  - G
+    - B
+      - A
+      - D
+        - C
+        - P <nil>
+    - I
+      - H
+      - N
+        - M <nil>
+        - P
+]
+```
+
+where nodes labeled with `<nil>` are hidden.
 
 Here is an example of drawing a red-black tree:
 
@@ -402,6 +425,35 @@ Here is an example:
   $
 ]
 ```
+
+#### Fine-tune
+
+As the saying goes, it's impossible to please everyone. Therefore, we provide a wrapper function to append some additional node/edge drawing functions to pre-defined graph drawing functions for fine-tuning.
+
+Here is an example of fine-tuning the binary tree graph drawing function to a huffman tree graph drawing function:
+
+![huffman-tree](docs/10-huffman-tree.svg)
+
+```typ
+#let huffman-tree-graph = tree-graph-wrapper(
+  tree-graph-fn: binary-tree-graph,
+  draw-node: ((label, )) => (stroke: none, label: $#label$),
+  draw-edge: (_, (pos, ), _) => (label: $pos.k$)
+)
+
+#huffman-tree-graph[
+  - (5)
+    - (2)
+      - A (1)
+      - B (1)
+    - (3)
+      - C (1)
+      - D (2)
+]
+
+```
+
+where we remove the stroke of every node and cast the label of every node to math mode, and draw every edge with the index of the child node among its siblings as the edge label, namely the huffman code bit.
 
 ### (extra) Concept of node/edge drawing functions
 
