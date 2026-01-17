@@ -31,6 +31,7 @@ This package uses [fletcher](https://typst.app/universe/package/fletcher) to ren
       - [Metadata Match node/edge drawing functions](#metadata-match-nodeedge-drawing-functions)
       - [Other Pre-defined node/edge drawing functions](#other-pre-defined-nodeedge-drawing-functions)
     - [Additional drawing functions](#additional-drawing-functions)
+    - [Layout Customization](#layout-customization)
   - [API Reference](#api-reference)
 
 ## Getting Started
@@ -931,6 +932,39 @@ For example, in the pre-defined fibonacci heap graph drawing function, we use an
 
 where the additional drawing function first finds all root nodes, namely nodes in level 1, then connects every two adjacent root nodes using a dashed edge.
 
+### Layout Customization
+
+By default, the package uses a simple algorithm to calculate the horizontal positions of nodes in the tree, which works well in most cases. However, in some cases, you may want to customize the layout of the tree more flexibly.
+
+To achieve this, you can set `node-attr` for the nodes using `#node-attr(...)`, which only affects the layout calculation of nodes, e.g.,
+
+![node-attr](docs/13-node-attr.svg)
+
+```typ
+#tidy-tree-graph(
+  default-node-attr: node-attr(align-to: "middle"),
+)[
+  - A
+    - B #node-attr(forest: true)
+      - E
+        - G
+        - H
+        - I
+        - K
+      - D
+    - C #node-attr(align-to: "first")
+      - F
+      - G #node-attr(align-to: 2)
+        - L
+        - O
+        - P
+      - M
+      - N
+]
+```
+
+where `forest: true` prevents horizontal compression of the trees in the forest (node `D` do not compress to the right of node `E`), and `align-to` specifies the child that the parent node should align to (node `C` aligns to the first child `F`, and node `G` aligns to the child `P` with index 2).
+
 ## API Reference
 
 The main function provided by this package is `tidy-tree-graph`, which has the following signature:
@@ -953,12 +987,7 @@ The main function provided by this package is `tidy-tree-graph`, which has the f
   // do NOT use it unless you know what you are doing
   min-gap: 1,
 
-  // levels of subtrees that should NOT be compressed horizontally
-  // sometimes, you may not want some subtrees to be compressed for better readability
-  // e.g. forest, pass `subtree-levels: (1, )`
-  // because the subtrees in level 1 are roots of the trees in the forest
-  // and you may want them to be drawn like individual trees
-  subtree-levels: array,
+  default-node-attr: node-attr(), // see above
 
   // set text(size: text-size)
   text-size: 8pt,
