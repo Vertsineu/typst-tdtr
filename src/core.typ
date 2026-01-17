@@ -472,6 +472,9 @@
       let average-spacing = (left-spacing + right-spacing) / 2
 
       let need-dx = left-spacing - average-spacing
+      if need-dx <= 0 {
+        continue
+      }
       // calculate the left most positions of right subtrees after moving
       let right-left-mosts = lefts.at(i + 1).at(n).slice(m + 1, tree.at(i + 1).at(n).len()).reduce((a, b) => a.zip(b).map(((x, y)) => calc.min(x, y)))
 
