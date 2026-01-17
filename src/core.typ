@@ -1,5 +1,6 @@
 #import "@preview/fletcher:0.5.8"
 #import "draws.typ" as tidy-tree-draws : *
+#import "attrs.typ": *
 
 /*
   convert a flattened tree represented by array with indices to a simplified tree
@@ -376,8 +377,8 @@
     - `tree`: a normalized tree represented by a three-dimensional array
       - see `tidy-tree-normalize` for the format
     - `min-gap`: minimum gap between two nodes, default to 1
-    - `subtree-levels`: levels of subtrees to be kept uncompressed, default to ()
-      - e.g. `(1, )` means the subtrees of the root will not be compressed, usually used by drawing forest where we do not want any compression between trees but we still want compression inside each tree
+    - `default-node-attr`: default attributes for nodes, default to `node-attr().value`
+      - see `node-attr` for more details
     - `body`: only for debug, never use it
   - output:
     - `ret`: `(xs, body)`
@@ -385,9 +386,23 @@
       - `body`: only for debug, never use it
       
 */
-#let tidy-tree-xs(tree, min-gap: 1, subtree-levels: (), body: []) = {
+#let tidy-tree-xs(tree, min-gap: 1, default-node-attr: node-attr(), body: []) = {
   // calculate the horizontal axis position of every node
   let xs = tree.map(level => level.map(nodes => nodes.map(_ => 0)))
+
+  // collect all node attributes
+  let attrs = tree.map(level => level.map(nodes => nodes.map(node => {
+    let values = collect-metadata(node)
+    let attr = values
+      .filter(meta => type(meta) == dictionary)
+      .find(meta => meta.class == "node-attr")
+    if attr == none {
+      // if not specified, use default node attributes
+      default-node-attr.value
+    } else {
+      attr
+    }
+  })))
 
   // expand the tree horizontally
   let x = 0 // horizontal axis position of current leaf node
@@ -444,12 +459,9 @@
     for m in range(1, tree.at(i + 1).at(n).len()) {
       let right-left = lefts.at(i + 1).at(n).at(m)
       let need-dx = calc.max(..left-right.zip(right-left).map(((a, b)) => a + min-gap - b))
-      if need-dx < 0 {
-        // can compact
-        dxs.at(i + 1).at(n).at(m) += need-dx
-        lefts.at(i + 1).at(n).at(m) = lefts.at(i + 1).at(n).at(m).map(x => x + need-dx)
-        rights.at(i + 1).at(n).at(m) = rights.at(i + 1).at(n).at(m).map(x => x + need-dx)
-      }
+      dxs.at(i + 1).at(n).at(m) += need-dx
+      lefts.at(i + 1).at(n).at(m) = lefts.at(i + 1).at(n).at(m).map(x => x + need-dx)
+      rights.at(i + 1).at(n).at(m) = rights.at(i + 1).at(n).at(m).map(x => x + need-dx)
       left-right = rights.at(i + 1).at(n).at(m).zip(left-right).map(((a, b)) => calc.max(a, b))
     }
 
@@ -460,23 +472,36 @@
       let average-spacing = (left-spacing + right-spacing) / 2
 
       let need-dx = left-spacing - average-spacing
-      // because has been compressed to left, thus can only move right
-      if need-dx > 0 {
-        // calculate the left most positions of right subtrees after moving
-        let right-left-mosts = lefts.at(i + 1).at(n).slice(m + 1, tree.at(i + 1).at(n).len()).reduce((a, b) => a.zip(b).map(((x, y)) => calc.min(x, y)))
+      // calculate the left most positions of right subtrees after moving
+      let right-left-mosts = lefts.at(i + 1).at(n).slice(m + 1, tree.at(i + 1).at(n).len()).reduce((a, b) => a.zip(b).map(((x, y)) => calc.min(x, y)))
 
-        // check whether can move
-        if rights.at(i + 1).at(n).at(m).zip(right-left-mosts).map(((a, b)) => a + need-dx <= b).reduce((a, b) => a and b) {
-          dxs.at(i + 1).at(n).at(m) += need-dx
-          lefts.at(i + 1).at(n).at(m) = lefts.at(i + 1).at(n).at(m).map(x => x + need-dx)
-          rights.at(i + 1).at(n).at(m) = rights.at(i + 1).at(n).at(m).map(x => x + need-dx)
-        }
+      // check whether can move
+      if rights.at(i + 1).at(n).at(m).zip(right-left-mosts).map(((a, b)) => a + need-dx <= b).reduce((a, b) => a and b) {
+        dxs.at(i + 1).at(n).at(m) += need-dx
+        lefts.at(i + 1).at(n).at(m) = lefts.at(i + 1).at(n).at(m).map(x => x + need-dx)
+        rights.at(i + 1).at(n).at(m) = rights.at(i + 1).at(n).at(m).map(x => x + need-dx)
       }
     }
 
     // move subtrees align to the center
     let children-xs = xs.at(i + 1).at(n).zip(dxs.at(i + 1).at(n)).map(((x, dx)) => x + dx)
-    let children-dx-center = leafx - (calc.max(..children-xs) + calc.min(..children-xs)) / 2
+    let align-to = attrs.at(i).at(j).at(k).align-to
+    let children-dx-center = leafx - if align-to == "midpoint" {
+      (calc.max(..children-xs) + calc.min(..children-xs)) / 2
+    } else if align-to == "first" {
+      children-xs.at(0)
+    } else if align-to == "last" {
+      children-xs.at(children-xs.len() - 1)
+    } else if align-to == "middle" {
+      let mid = calc.floor(children-xs.len() / 2)
+      if calc.rem(children-xs.len(), 2) == 1 {
+        children-xs.at(mid)
+      } else {
+        (children-xs.at(mid - 1) + children-xs.at(mid)) / 2
+      }
+    } else if type(align-to) == int {
+      children-xs.at(align-to)
+    }
     for m in range(0, tree.at(i + 1).at(n).len()) {
       dxs.at(i + 1).at(n).at(m) += children-dx-center
       lefts.at(i + 1).at(n).at(m) = lefts.at(i + 1).at(n).at(m).map(x => x + children-dx-center)
@@ -491,7 +516,12 @@
     rights.at(i).at(j).at(k).at(i) = leafx
 
     // treat the subtree as a whole to avoid further compression
-    if i in subtree-levels {
+    let subtree = if i > 0 {
+      attrs.at(i - 1).flatten().at(j).forest
+    } else {
+      false
+    }
+    if subtree {
       let left-most = calc.min(..lefts.at(i).at(j).at(k))
       let right-most = calc.max(..rights.at(i).at(j).at(k))
 
@@ -646,8 +676,8 @@
     - `compact`: whether to compact the tree horizontally, default to false
       - if true, may cause overlapping nodes when some very long nodes are siblings in fractional positions
     - `min-gap`: minimum gap between two nodes, default to 1
-    - `subtree-levels`: levels of subtrees to be kept uncompressed, default to ()
-      - see `tidy-tree-xs` for more details
+    - `default-node-attr`: default attributes for nodes, default to `node-attr().value`
+      - see `node-attr` for more details
     - `text-size`: size of the text, default to 6pt
     - `node-stroke`: stroke of the node, default to 0.25pt
     - `node-inset`: inset of the node, default to 2pt
@@ -670,7 +700,7 @@
   additional-draw: tidy-tree-draws.default-additional-draw,
   compact: false,
   min-gap: 1,
-  subtree-levels: (),
+  default-node-attr: node-attr(),
   text-size: 8pt,
   node-stroke: 0.25pt,
   node-inset: 3pt,
@@ -709,7 +739,7 @@
   let tree-edges = tidy-tree-normalize(tree-edges)
 
   // calculate the horizontal axis position of every node
-  let (xs, _) = tidy-tree-xs(tree, min-gap: min-gap, subtree-levels: subtree-levels)
+  let (xs, _) = tidy-tree-xs(tree, min-gap: min-gap, default-node-attr: default-node-attr)
 
   // support node width and node height settings, which are not supported in `fletcher.diagram` directly
   let size-draw-node = tidy-tree-draws.size-draw-node.with(

@@ -4,8 +4,8 @@
 #show: scale.with(125%, reflow: true)
 
 #fibonacci-heap-graph[
-  - R <root>
-    - 10
+  - R <root> #node-attr(forest: true)
+    - 10 
       - 11
     - 20
       - 34

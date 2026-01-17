@@ -384,8 +384,8 @@ Here is an example of drawing a Fibonacci heap:
 
 ```typ
 #fibonacci-heap-graph[
-  - R <root>
-    - 10
+  - R <root> #node-attr(forest: true)
+    - 10 
       - 11
     - 20
       - 34
@@ -401,10 +401,9 @@ Here is an example of drawing a Fibonacci heap:
           - 13
     - 9
 ]
-
 ```
 
-where nodes labeled with `<root>` will be hidden while drawing, same as those edges pointing from them, and nodes labeled with `<mark>` will be drawn in black and their text in white.
+where `#node-attr(forest: true)` marks the root of a forest, which only affects the layout of the tree such that the trees in the forest are not compressed horizontally (you can try to remove it to see the difference), nodes labeled with `<root>` will be hidden while drawing, same as those edges pointing from them, and nodes labeled with `<mark>` will be drawn in black and their text in white.
 
 note: Also to follow Typst syntax, we place a placeholder `R` for the hidden root node
 
@@ -439,7 +438,7 @@ Here is an example of fine-tuning the binary tree graph drawing function to a hu
 ```typ
 #let huffman-tree-graph = tree-graph-wrapper(
   tree-graph-fn: binary-tree-graph,
-  draw-node: ((label, )) => (stroke: none, label: $#label$),
+  draw-node: ((label, )) => (stroke: none, label: $label$),
   draw-edge: (_, (pos, ), _) => (label: $pos.k$)
 )
 

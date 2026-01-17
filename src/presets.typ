@@ -133,7 +133,6 @@
   node-inset: 4pt,
   node-width: 1.6em,
   spacing: (15pt, 15pt),
-  subtree-levels: (1, ),
   draw-node: (
     tidy-tree-draws.circle-draw-node,
     tidy-tree-draws.metadata-match-draw-node.with(
