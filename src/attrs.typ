@@ -4,8 +4,12 @@
   create attributes for tree nodes
   - input:
     - `forest`: whether this node is the root of a forest
-      - if false (default), the subtrees from its children will be compressed horizontally together with this node
-      - if true, the subtrees from its children will be treated as a separate tree and are not compressed horizontally
+      - if false (default), the children are fitted into `tight`
+      - if true, the children are fitted into `band`
+    - `fit`: how to calculate the bounding box of this subtree
+      - `"tight"` (default): fit subtree tightly with its sibling subtrees
+      - `"rectangle"`: fit children in a rectangle with width equal to the widest span of the subtree and height equal to the height of the subtree
+      - `"band"`: fit children in a band, i.e., the width is the same as the rectangle fit, but the height is infinite
     - `align-to`: specify the node that this node needs to align to
       - if an index specified, e,g, `0` as the first child, align this node above that child
       - if a string specified
@@ -18,11 +22,13 @@
 */
 #let node-attr(
   forest: false,
+  fit: "tight",
   align-to: "midpoint"
 ) = {
   metadata((
     class: "node-attr",
     forest: forest,
+    fit: fit,
     align-to: align-to,
   ))
 }
