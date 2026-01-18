@@ -13,6 +13,7 @@
         - `"first"`: align to the first child
         - `"last"`: align to the last child
         - `"middle"`: align to the middle child (midpoint of the middle two if even number of children)
+      - if a ratio specified, e.g. `25%`, align to that percentage point between the first and last child
   - output: metadata with node attributes
 */
 #let node-attr(

@@ -504,6 +504,8 @@
       }
     } else if type(align-to) == int {
       children-xs.at(align-to)
+    } else if type(align-to) == ratio {
+      children-xs.at(0) + float(align-to) * (children-xs.at(children-xs.len() - 1) - children-xs.at(0))
     }
     for m in range(0, tree.at(i + 1).at(n).len()) {
       dxs.at(i + 1).at(n).at(m) += children-dx-center
