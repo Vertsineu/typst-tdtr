@@ -37,7 +37,7 @@
 /// default function for drawing a node
 #let default-draw-node = ((name, label, pos)) => {
   (
-    pos: (pos.x, pos.i), 
+    pos: (pos.x, pos.y), 
     label: [#label], 
     name: name, 
     shape: rect
@@ -109,6 +109,20 @@
   (
     pos: (pos.i, pos.x)
   )
+}
+
+/// draw the tree in absolute units
+#let absolute-draw-node = ((name, label, pos), unit: 1em) => {
+  if type(unit) == array {
+    let (x-unit, y-unit, ..) = unit
+    (
+      pos: (pos.x * x-unit, pos.y * -y-unit)
+    )
+  } else {
+    (
+      pos: (pos.x * unit, pos.y * -unit)
+    )
+  }
 }
 
 /// draw a hidden node but affecting the layout
