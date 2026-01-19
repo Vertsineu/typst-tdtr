@@ -372,26 +372,17 @@
 }
 
 /*
-  calculate the horizontal axis position for a normalized tree when drawing as a tidy tree
+  collect node attributes from a normalized tree
   - input:
     - `tree`: a normalized tree represented by a three-dimensional array
       - see `tidy-tree-normalize` for the format
-    - `min-gap`: minimum gap between two nodes, default to 1
     - `default-node-attr`: default attributes for nodes, default to `node-attr().value`
       - see `node-attr` for more details
-    - `body`: only for debug, never use it
   - output:
-    - `ret`: `(xs, body)`
-      - `xs`: the same structure as `tree`, but each node is replaced by its horizontal axis position
-      - `body`: only for debug, never use it
-      
+    - `ret`: a three-dimensional array with the same structure as `tree`, but each node is replaced by its attributes dictionary
 */
-#let tidy-tree-xs(tree, min-gap: 1, default-node-attr: node-attr(), body: []) = {
-  // calculate the horizontal axis position of every node
-  let xs = tree.map(level => level.map(nodes => nodes.map(_ => 0)))
-
-  // collect all node attributes
-  let attrs = tree.map(level => level.map(nodes => nodes.map(node => {
+#let tidy-tree-attrs(tree, default-node-attr: node-attr()) = {
+  tree.map(level => level.map(nodes => nodes.map(node => {
     let values = collect-metadata(node)
     let attr = values
       .filter(meta => type(meta) == dictionary)
@@ -403,10 +394,39 @@
       attr
     }
   })))
+}
 
-  // expand the tree horizontally
+/*
+  calculate the horizontal axis position for a normalized tree when drawing as a tidy tree
+  - input:
+    - `tree`: a normalized tree represented by a three-dimensional array
+      - see `tidy-tree-normalize` for the format
+    - `root`: root node to start calculating positions
+      - `(i, j, k)`, see `tidy-tree-elements` for more details
+    - `min-gap`: minimum gap between two nodes, default to 1
+    - `default-node-attr`: default attributes for nodes, default to `node-attr().value`
+      - see `node-attr` for more details
+    - `body`: only for debug, never use it
+  - output:
+    - `ret`: `(xs, ys, body)`
+      - `xs`: the same structure as `tree`, but each node is replaced by its horizontal axis position
+      - `ys`: the same structure as `tree`, but each node is replaced by its vertical axis position
+      - `body`: only for debug, never use it
+      
+*/
+#let tidy-tree-coords(tree, root: (0, 0, 0), min-gap: 1, default-node-attr: node-attr(), body: []) = {
+  let (ri, rj, rk) = root
+  // calculate the horizontal axis position of every node
+  let xs = tree.map(level => level.map(nodes => nodes.map(_ => 0)))
+  // calculate the vertical axis position of every node
+  let ys = tree.map(level => level.map(nodes => nodes.map(_ => 0)))
+
+  // collect all node attributes
+  let attrs = tree
+
+  // expand the tree horizontally and vertically
   let x = 0 // horizontal axis position of current leaf node
-  let expand(i, j, k, xs, x, body) = {
+  let expand(i, j, k, xs, ys, x, body) = {
     let n = tree.at(i).slice(0, j).flatten().len() + k // number of nodes before current node in current level
     
     // check if this node is leaf
@@ -414,40 +434,108 @@
       // not leaf
       let children = tree.at(i + 1).at(n)
       for (m, child) in children.enumerate() {
-        (xs, x, body) = expand(i + 1, n, m, xs, x, body)
+        (xs, ys, x, body) = expand(i + 1, n, m, xs, ys, x, body)
       }
       let children-xs = xs.at(i + 1).at(n)
       // xs.at(i).at(j).at(k) = children-xs.sum() / children-xs.len
       xs.at(i).at(j).at(k) = calc.max(..children-xs) - (calc.max(..children-xs) - calc.min(..children-xs)) / 2
-      ()
     } else {
       // leaf
       xs.at(i).at(j).at(k) = x
       x += min-gap
     }
 
-    (xs, x, body)
+    // set vertical position
+    ys.at(i).at(j).at(k) = i * min-gap
+
+    (xs, ys, x, body)
   }
-  (xs, x, body) = expand(0, 0, 0, xs, x, body)
+  (xs, ys, x, body) = expand(ri, rj, rk, xs, ys, x, body)
   // here, x is the width of the tree
 
   // try to compress the tree horizontally
+  // also tackle rotation of subtrees
   let height = tree.len()
   let dxs = tree.map(level => level.map(nodes => nodes.map(_ => 0)))
+  let dys = tree.map(level => level.map(nodes => nodes.map(_ => 0)))
   let lefts = tree.map(level => level.map(nodes => nodes.map(_ => range(0, height).map(_ => 3 * x))))
   let rights = tree.map(level => level.map(nodes => nodes.map(_ => range(0, height).map(_ => -3 * x))))
-  let try-compress(i, j, k, dxs, lefts, rights, body) = {
+  let try-compress(i, j, k, xs, ys, dxs, dys, lefts, rights, body) = {
     let n = tree.at(i).slice(0, j).flatten().len() + k // number of nodes before current node in current level
     // initialize lefts and rights for current node
     let leafx = xs.at(i).at(j).at(k)
     lefts.at(i).at(j).at(k).at(i) = leafx
     rights.at(i).at(j).at(k).at(i) = leafx
 
+    let rotate = attrs.at(i).at(j).at(k).rotate
+    // if rotate, treat the subtree as an independent subtree
+    // namely, treat the node as if it is leaf
+    if rotate != 0deg {
+      let tree = tree
+      tree.at(i).at(j).at(k).rotate = 0deg // mark as visited
+      let (xs-sub, ys-sub, body-sub) = tidy-tree-coords(tree, root: (i, j, k), min-gap: min-gap, default-node-attr: default-node-attr, body: body)
+      body = body-sub
+
+      // first move the subtree to root at (0, 0)
+      let rootx-sub = xs-sub.at(i).at(j).at(k)
+      let rooty-sub = ys-sub.at(i).at(j).at(k)
+      xs-sub = xs-sub.map(level => level.map(nodes => nodes.map(x => x - rootx-sub)))
+      ys-sub = ys-sub.map(level => level.map(nodes => nodes.map(y => y - rooty-sub)))
+
+      // then override the positions of the current subtree nodes
+      let cx = xs.at(i).at(j).at(k)
+      let cy = ys.at(i).at(j).at(k)
+      let override(i, j, k, xs, ys, body) = {
+        let n = tree.at(i).slice(0, j).flatten().len() + k // number of nodes before current node in current level
+        
+        // if not leaf, override children
+        if i + 1 < tree.len() and tree.at(i + 1).at(n).len() > 0 {
+          for (m, child) in tree.at(i + 1).at(n).enumerate() {
+            (xs, ys, body) = override(i + 1, n, m, xs, ys, body)
+          }
+        }
+
+        // override current node
+        let x-sub = xs-sub.at(i).at(j).at(k)
+        let y-sub = ys-sub.at(i).at(j).at(k)
+        xs.at(i).at(j).at(k) = x-sub + cx
+        ys.at(i).at(j).at(k) = y-sub + cy
+
+        (xs, ys, body)
+      }
+      (xs, ys, body) = override(i, j, k, xs, ys, body)
+
+      // calculate the rotated positions
+      let angle = - rotate / 180deg * calc.pi
+      let cx-sub = xs-sub.at(i).at(j).at(k)
+      let cy-sub = ys-sub.at(i).at(j).at(k)
+      let rotate(i, j, k, xs, ys, body) = {
+        let n = tree.at(i).slice(0, j).flatten().len() + k // number of nodes before current node in current level
+        
+        // if not leaf, rotate children
+        if i + 1 < tree.len() and tree.at(i + 1).at(n).len() > 0 {
+          for (m, child) in tree.at(i + 1).at(n).enumerate() {
+            (xs, ys, body) = rotate(i + 1, n, m, xs, ys, body)
+          }
+        }
+
+        // rotate current node
+        let x-sub = xs-sub.at(i).at(j).at(k)
+        let y-sub = ys-sub.at(i).at(j).at(k)
+        let x-rot = (x-sub - cx-sub) * calc.cos(angle) - (y-sub - cy-sub) * calc.sin(angle)
+        let y-rot = (x-sub - cx-sub) * calc.sin(angle) + (y-sub - cy-sub) * calc.cos(angle)
+        xs.at(i).at(j).at(k) += x-rot - x-sub
+        ys.at(i).at(j).at(k) += y-rot - y-sub
+
+        (xs, ys, body)
+      }
+      (xs, ys, body) = rotate(i, j, k, xs, ys, body)
+    }
     // check if this node is leaf
-    if i + 1 < tree.len() and tree.at(i + 1).at(n).len() != 0 {
+    else if i + 1 < tree.len() and tree.at(i + 1).at(n).len() != 0 {
       // not leaf
       for (m, child) in tree.at(i + 1).at(n).enumerate() {
-        (dxs, lefts, rights, body) = try-compress(i + 1, n, m, dxs, lefts, rights, body)
+        (xs, ys,dxs, dys, lefts, rights, body) = try-compress(i + 1, n, m, xs, ys, dxs, dys, lefts, rights, body)
       }
 
       // from the first left subtree, continue to compact the right subtrees
@@ -556,12 +644,12 @@
       // do nothing, default behavior
     }
 
-    (dxs, lefts, rights, body)
+    (xs, ys, dxs, dys, lefts, rights, body)
   }
-  (dxs, lefts, rights, body) = try-compress(0, 0, 0, dxs, lefts, rights, body)
+  (xs, ys, dxs, dys, lefts, rights, body) = try-compress(ri, rj, rk, xs, ys, dxs, dys, lefts, rights, body)
 
-  // apply compress to xs
-  let apply-compress(i, j, k, dxs, xs, dx, body) = {
+  // apply compress for recursive dxs and dys
+  let apply-compress(i, j, k, dxs, dys, xs, ys, dx, dy, body) = {
     let n = tree.at(i).slice(0, j).flatten().len() + k // number of nodes before current node in current level
     
     // check if this node is leaf
@@ -569,22 +657,27 @@
       // not leaf
       let children = tree.at(i + 1).at(n)
       for (m, child) in children.enumerate() {
-        (xs, body) = apply-compress(i + 1, n, m, dxs, xs, dx + dxs.at(i).at(j).at(k), body)
+        (xs, ys, body) = apply-compress(i + 1, n, m, dxs, dys, xs, ys, dx + dxs.at(i).at(j).at(k), dy + dys.at(i).at(j).at(k), body)
       }
     }
 
     // apply dxs to xs
     xs.at(i).at(j).at(k) += dx + dxs.at(i).at(j).at(k)
+    // apply dys to ys
+    ys.at(i).at(j).at(k) += dy + dys.at(i).at(j).at(k)
 
-    (xs, body)
+    (xs, ys, body)
   }
-  (xs, body) = apply-compress(0, 0, 0, dxs, xs, 0, body)
+  (xs, ys, body) = apply-compress(ri, rj, rk, dxs, dys, xs, ys, 0, 0, body)
 
   // make sure the minimum x is 0
   let x-min = calc.min(..xs.flatten())
   xs = xs.map(level => level.map(nodes => nodes.map(x => x - x-min)))
+  // make sure the minimum y is 0
+  let y-min = calc.min(..ys.flatten())
+  ys = ys.map(level => level.map(nodes => nodes.map(y => y - y-min)))
 
-  (xs, body)
+  (xs, ys, body)
 }
 
 /*
@@ -606,6 +699,7 @@
             - `j`: index of the parent node in the flattened `i - 1`-th level
             - `k`: index of the child node in the children of the parent node
             - `x`: horizontal axis position of the node
+            - `y`: vertical axis position of the node
       - output:
         - `ret`: the arguments passed to `fletcher.node`, can be a dictionary, an array or an argument object
     - `draw-edge`: function for drawing an edge, default to a straight arrow
@@ -620,7 +714,7 @@
   - output:
     - `ret`: an array of elements for drawing a tidy tree
 */
-#let tidy-tree-elements(tree, xs, tree-edges, draw-node, draw-edge, compact: false) = {
+#let tidy-tree-elements(tree, xs, ys, tree-edges, draw-node, draw-edge, compact: false) = {
   let elements = ()
   let nodes = ()
   let parents = (none, ) * tree.at(0).len() // labels of parent nodes for current level
@@ -634,10 +728,11 @@
       let parent-node = parents.at(j)
       for (k, child) in children.enumerate() {
         let x = xs.at(i).at(j).at(k)
+        let y = ys.at(i).at(j).at(k)
 
         let child-edge = tree-edges.at(i).at(j).at(k)
         let child-label = new-label(label-count); label-count += 1
-        let child-pos = (i: i, j: j, k: k, x: x)
+        let child-pos = (i: i, j: j, k: k, x: x, y: y)
         let child-node = (
           name: child-label, 
           label: child, 
@@ -646,8 +741,8 @@
 
         // prevent overlapping nodes by drawing hidden nodes at left and right positions
         if not compact {
-          let child-pos-left = (i: i, j: j, k: k, x: calc.floor(x))
-          let child-pos-right = (i: i, j: j, k: k, x: calc.ceil(x))
+          let child-pos-left = (i: i, j: j, k: k, x: calc.floor(x), y: calc.floor(y))
+          let child-pos-right = (i: i, j: j, k: k, x: calc.ceil(x), y: calc.ceil(y))
 
           let child-node-left = (
             name: none, 
@@ -765,8 +860,11 @@
   // cast a simplified tree of edges into a normalized tree of edges
   let tree-edges = tidy-tree-normalize(tree-edges)
 
-  // calculate the horizontal axis position of every node
-  let (xs, _) = tidy-tree-xs(tree, min-gap: min-gap, default-node-attr: default-node-attr)
+  // collect node attributes for coordinate calculation
+  let attrs = tidy-tree-attrs(tree, default-node-attr: default-node-attr)
+
+  // calculate the coordinates of every node
+  let (xs, ys, _) = tidy-tree-coords(attrs, min-gap: min-gap, default-node-attr: default-node-attr)
 
   // support node width and node height settings, which are not supported in `fletcher.diagram` directly
   let size-draw-node = tidy-tree-draws.size-draw-node.with(
@@ -787,7 +885,7 @@
   )
 
   // generate elements
-  let (elements, nodes) = tidy-tree-elements(tree, xs, tree-edges, draw-node, draw-edge, compact: compact)
+  let (elements, nodes) = tidy-tree-elements(tree, xs, ys, tree-edges, draw-node, draw-edge, compact: compact)
 
   // construct arguments
   let args = arguments(

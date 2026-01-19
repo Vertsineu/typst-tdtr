@@ -938,7 +938,7 @@ By default, the package uses a simple algorithm to calculate the horizontal posi
 
 To achieve this, you can set `node-attr` for the nodes using `#node-attr(...)`, which only affects the layout calculation of nodes, e.g.,
 
-![node-attr](docs/13-node-attr.svg)
+![align-forest](docs/13-align-forest-tree.svg)
 
 ```typ
 #tidy-tree-graph(
@@ -964,6 +964,50 @@ To achieve this, you can set `node-attr` for the nodes using `#node-attr(...)`, 
 ```
 
 where `forest: true` prevents horizontal compression of the trees in the forest (node `D` do not compress to the right of node `E`), and `align-to` specifies the child that the parent node should align to (node `C` aligns to the first child `F`, and node `G` aligns to the child `P` with index 2).
+
+Another example:
+
+![rotated-tree](docs/14-rotated-tree.svg)
+
+```typ
+#tidy-tree-graph(
+  draw-node: (
+    (stroke: none, shape: circle),
+    tidy-tree-draws.absolute-draw-node.with(unit: 3em)
+  ),
+  draw-edge: (marks: "-"),
+)[
+  - root
+    - L #node-attr(rotate: -120deg)
+      - L1
+      - L2
+      - L3 #node-attr(rotate: 120deg)
+        - LL
+        - LC
+        - LR
+    - C
+      - C1
+      - C3
+    - R #node-attr(rotate: 120deg)
+      - R1 #node-attr(rotate: -60deg)
+        - RL #node-attr(rotate: -60deg)
+          - RL1 #node-attr(rotate: -60deg)
+            - RLL #node-attr(rotate: -60deg)
+              - RLL1
+              - RLL2
+              - RLL3
+            - RLC
+            - RLR
+          - RL2
+          - RL3
+        - RC
+        - RR
+      - R2
+      - R3
+]
+```
+
+where `rotate` specifies the rotation angle of the node, and the layout algorithm will arrange the child nodes around the parent node according to the rotation angle.
 
 ## API Reference
 
