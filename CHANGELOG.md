@@ -1,4 +1,4 @@
-# [0.5.0](https://github.com/Vertsineu/typst-tdtr/compare/v0.4.4...v0.5.0) (2026-01-17)
+# [0.5.0](https://github.com/Vertsineu/typst-tdtr/compare/v0.4.4...v0.5.0) (2026-01-19)
 
 
 ### Bug Fixes
@@ -9,8 +9,12 @@
 
 ### Features
 
+* add absolute-draw-node function for absolute coordinates ([b5208e2](https://github.com/Vertsineu/typst-tdtr/commit/b5208e295b6810a646c86758008e7ba5204635b9))
 * support append additional drawing functions to pre-defined graph drawing functions ([ef7bbaf](https://github.com/Vertsineu/typst-tdtr/commit/ef7bbaf6783bbe626f77eb9c68864659dd4ffbc3))
+* support fit subtree into various manners ([e9cd65e](https://github.com/Vertsineu/typst-tdtr/commit/e9cd65ee0d82cff3100c80b91546b8511c9c19a3))
 * support node attributes for layout guidance ([71e6bb3](https://github.com/Vertsineu/typst-tdtr/commit/71e6bb39483b11445bcc7aa99fe7c15e6ccf1ffc))
+* support ratio for align-to ([18e73f6](https://github.com/Vertsineu/typst-tdtr/commit/18e73f65e8758b9f65f330b4c0794ef898b42861))
+* support rotate a tree at any node ([046eb2f](https://github.com/Vertsineu/typst-tdtr/commit/046eb2f14a44d5a12b20396a171a0842a226e5d8))
 
 
 
