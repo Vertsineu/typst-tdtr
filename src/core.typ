@@ -386,7 +386,7 @@
     let values = collect-metadata(node)
     let attr = values
       .filter(meta => type(meta) == dictionary)
-      .find(meta => meta.class == "node-attr")
+      .find(meta => meta.at("class", default: "") == "node-attr")
     if attr == none {
       // if not specified, use default node attributes
       default-node-attr.value
@@ -397,7 +397,7 @@
 }
 
 /*
-  calculate the horizontal axis position for a normalized tree when drawing as a tidy tree
+  calculate the coordinates for a normalized tree when drawing as a tidy tree
   - input:
     - `tree`: a normalized tree represented by a three-dimensional array
       - see `tidy-tree-normalize` for the format
@@ -688,7 +688,9 @@
     - `tree-edges`: a normalized tree of edges represented by a three-dimensional array
       - see `tidy-tree-edges-from-list` for the format
     - `xs`: the same structure as `tree`, but each node is replaced by its horizontal axis position
-      - see `tidy-tree-xs` for the format
+      - see `tidy-tree-coords` for the format
+    - `ys`: the same structure as `tree`, but each node is replaced by its vertical axis position
+      - see `tidy-tree-coords` for the format
     - `draw-node`: function for drawing a node, default to a rectangle node
       - input:
         - `node`: the information of the node, represented by a dictionary with the following keys:
