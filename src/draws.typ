@@ -138,18 +138,24 @@
 
 /// default function for drawing an edge
 #let default-draw-edge = (from-node, to-node, edge-label) => {
+  let label = [#edge-label]
   (
     vertices: (from-node.name, to-node.name), 
-    marks: "-|>"
+    marks: "-|>",
+    label: label,
+    label-wrapper: edge => context {
+      let size = measure(label)
+      if size.width <= 0pt and size.height <= 0pt {
+        none
+      } else {
+        // default label style from fletcher
+        box(label, inset: .2em, radius: .2em, fill: edge.label-fill) 
+      }
+    },
+    label-fill: white,
+    label-sep: 0pt, 
+    label-anchor: "center"
   )
-  if edge-label != none {
-    (
-      label: [#edge-label], 
-      label-fill: white,
-      label-sep: 0pt, 
-      label-anchor: "center"
-    )
-  }
 }
 
 /// draw an edge with metadata matching
