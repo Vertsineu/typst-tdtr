@@ -1,3 +1,13 @@
+# [0.5.1](https://github.com/Vertsineu/typst-tdtr/compare/v0.5.0...v0.5.1) (2026-02-14)
+
+
+### Bug Fixes
+
+* do not export all for draws.typ ([75a3c59](https://github.com/Vertsineu/typst-tdtr/commit/75a3c59f23441ead6a2e776aa7df84da566f8b0d))
+* edge label with zero width and height will be drawn as a white point ([04ba2bd](https://github.com/Vertsineu/typst-tdtr/commit/04ba2bd07c0b92758485293c0447f197197ebe9e)), closes [#6](https://github.com/Vertsineu/typst-tdtr/issues/6)
+
+
+
 # [0.5.0](https://github.com/Vertsineu/typst-tdtr/compare/v0.4.4...v0.5.0) (2026-01-19)
 
 
