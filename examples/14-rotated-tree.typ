@@ -1,4 +1,4 @@
-#import "@preview/tdtr:0.5.0": *
+#import "@preview/tdtr:0.5.1": *
 
 #set page(height: auto, width: auto, margin: 1em)
 #show: scale.with(125%, reflow: true)
@@ -6,7 +6,7 @@
 #tidy-tree-graph(
   draw-node: (
     (stroke: none, shape: circle),
-    tidy-tree-draws.absolute-draw-node.with(unit: 3em)
+    tidy-tree-draws.absolute-draw-node.with(unit: 3em),
   ),
   draw-edge: (marks: "-"),
 )[

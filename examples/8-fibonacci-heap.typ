@@ -1,11 +1,11 @@
-#import "@preview/tdtr:0.5.0": *
+#import "@preview/tdtr:0.5.1": *
 
 #set page(height: auto, width: auto, margin: 1em)
 #show: scale.with(125%, reflow: true)
 
 #fibonacci-heap-graph[
   - R <root> #node-attr(forest: true)
-    - 10 
+    - 10
       - 11
     - 20
       - 34
