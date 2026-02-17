@@ -1,4 +1,4 @@
-#import "@preview/tdtr:0.5.1": *
+#import "@preview/tdtr:0.5.2": *
 
 #set page(height: auto, width: auto, margin: 1em)
 #show: scale.with(125%, reflow: true)
@@ -8,7 +8,7 @@
   draw-node: ((label,)) => (stroke: none, label: $label$),
   draw-edge: (
     tidy-tree-draws.side-label-draw-edge,
-    (_, (pos,), _) => (label: $pos.k$)
+    (_, (pos,), _) => (label: $pos.k$),
   ),
 )
 

@@ -1,6 +1,6 @@
 [package]
 name = "tdtr"
-version = "0.5.1"
+version = "0.5.2"
 entrypoint = "lib.typ"
 authors = ["Vertsineu"]
 license = "MIT"

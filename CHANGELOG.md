@@ -1,3 +1,12 @@
+# [0.5.2](https://github.com/Vertsineu/typst-tdtr/compare/v0.5.1...v0.5.2) (2026-02-17)
+
+
+### Bug Fixes
+
+* **draws:** edge label do not work by incorrect label-wrapper ([6ddbd3b](https://github.com/Vertsineu/typst-tdtr/commit/6ddbd3b131cfda0968c14628539c6ff65721f000)), closes [#7](https://github.com/Vertsineu/typst-tdtr/issues/7)
+
+
+
 # [0.5.1](https://github.com/Vertsineu/typst-tdtr/compare/v0.5.0...v0.5.1) (2026-02-14)
 
 
