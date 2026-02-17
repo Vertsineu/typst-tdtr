@@ -439,8 +439,11 @@ Here is an example of fine-tuning the binary tree graph drawing function to a hu
 ```typ
 #let huffman-tree-graph = tree-graph-wrapper(
   tree-graph-fn: binary-tree-graph,
-  draw-node: ((label, )) => (stroke: none, label: $label$),
-  draw-edge: (_, (pos, ), _) => (label: $pos.k$)
+  draw-node: ((label,)) => (stroke: none, label: $label$),
+  draw-edge: (
+    tidy-tree-draws.side-label-draw-edge,
+    (_, (pos,), _) => (label: $pos.k$)
+  ),
 )
 
 #huffman-tree-graph[
@@ -452,7 +455,6 @@ Here is an example of fine-tuning the binary tree graph drawing function to a hu
       - C (1)
       - D (2)
 ]
-
 ```
 
 where we remove the stroke of every node and cast the label of every node to math mode, and draw every edge with the index of the child node among its siblings as the edge label, namely the huffman code bit.
@@ -724,18 +726,17 @@ Default node and edge drawing functions are defined as follows:
 
 /// default function for drawing an edge
 #let default-draw-edge = (from-node, to-node, edge-label) => {
-  let label = [#edge-label]
   (
     vertices: (from-node.name, to-node.name), 
     marks: "-|>",
-    label: label,
-    label-wrapper: edge => context {
-      let size = measure(label)
+    label: [#edge-label],
+    label-wrapper: edge =>  {
+      let size = measure(edge.label)
       if size.width <= 0pt and size.height <= 0pt {
         none
       } else {
         // default label style from fletcher
-        box(label, inset: .2em, radius: .2em, fill: edge.label-fill) 
+        box(edge.label, inset: .2em, radius: .2em, fill: edge.label-fill) 
       }
     },
     label-fill: white,
