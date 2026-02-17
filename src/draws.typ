@@ -138,18 +138,17 @@
 
 /// default function for drawing an edge
 #let default-draw-edge = (from-node, to-node, edge-label) => {
-  let label = [#edge-label]
   (
     vertices: (from-node.name, to-node.name), 
     marks: "-|>",
-    label: label,
-    label-wrapper: edge => context {
-      let size = measure(label)
+    label: [#edge-label],
+    label-wrapper: edge =>  {
+      let size = measure(edge.label)
       if size.width <= 0pt and size.height <= 0pt {
         none
       } else {
         // default label style from fletcher
-        box(label, inset: .2em, radius: .2em, fill: edge.label-fill) 
+        box(edge.label, inset: .2em, radius: .2em, fill: edge.label-fill) 
       }
     },
     label-fill: white,
@@ -273,6 +272,14 @@
 #let hidden-draw-edge = (from-node, to-node, edge-label) => {
   (
     post: x => none
+  )
+}
+
+/// draw an edge with label on sides, not on the middle of the edge
+#let side-label-draw-edge = (from-node, to-node, edge-label, label-sep: 0.4em) => {
+  (
+    label-anchor: auto, 
+    label-sep: label-sep
   )
 }
 

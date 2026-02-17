@@ -6,7 +6,10 @@
 #let huffman-tree-graph = tree-graph-wrapper(
   tree-graph-fn: binary-tree-graph,
   draw-node: ((label,)) => (stroke: none, label: $label$),
-  draw-edge: (_, (pos,), _) => (label: $pos.k$),
+  draw-edge: (
+    tidy-tree-draws.side-label-draw-edge,
+    (_, (pos,), _) => (label: $pos.k$)
+  ),
 )
 
 #huffman-tree-graph[
@@ -18,4 +21,3 @@
       - C (1)
       - D (2)
 ]
-
