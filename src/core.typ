@@ -467,9 +467,13 @@
     lefts.at(i).at(j).at(k).at(i) = leafx
     rights.at(i).at(j).at(k).at(i) = leafx
 
+    if i + 1 >= tree.len() or tree.at(i + 1).at(n).len() == 0 {
+      // leaf, do nothing
+      return (xs, ys, dxs, dys, lefts, rights, body)
+    }
+
     let rotate = attrs.at(i).at(j).at(k).rotate
     // if rotate, treat the subtree as an independent subtree
-    // namely, treat the node as if it is leaf
     if rotate != 0deg {
       let tree = tree
       tree.at(i).at(j).at(k).rotate = 0deg // mark as visited
@@ -530,80 +534,84 @@
         (xs, ys, body)
       }
       (xs, ys, body) = rotate(i, j, k, xs, ys, body)
-    }
-    // check if this node is leaf
-    else if i + 1 < tree.len() and tree.at(i + 1).at(n).len() != 0 {
-      // not leaf
-      for (m, child) in tree.at(i + 1).at(n).enumerate() {
-        (xs, ys,dxs, dys, lefts, rights, body) = try-compress(i + 1, n, m, xs, ys, dxs, dys, lefts, rights, body)
-      }
 
-      // from the first left subtree, continue to compact the right subtrees
-      let left-right = rights.at(i + 1).at(n).at(0)
-      for m in range(1, tree.at(i + 1).at(n).len()) {
-        let right-left = lefts.at(i + 1).at(n).at(m)
-        let need-dx = calc.max(..left-right.zip(right-left).map(((a, b)) => a + min-gap - b))
+      // early return since the subtree is treated as an independent subtree 
+      // and we do not need to compress it with other subtrees
+      // namely, as if it's a leaf node
+      return (xs, ys, dxs, dys, lefts, rights, body)
+    }
+    
+    // now, this node is not leaf and not rotated, truly try to compress the subtree
+    
+    for (m, child) in tree.at(i + 1).at(n).enumerate() {
+      (xs, ys,dxs, dys, lefts, rights, body) = try-compress(i + 1, n, m, xs, ys, dxs, dys, lefts, rights, body)
+    }
+
+    // from the first left subtree, continue to compact the right subtrees
+    let left-right = rights.at(i + 1).at(n).at(0)
+    for m in range(1, tree.at(i + 1).at(n).len()) {
+      let right-left = lefts.at(i + 1).at(n).at(m)
+      let need-dx = calc.max(..left-right.zip(right-left).map(((a, b)) => a + min-gap - b))
+      dxs.at(i + 1).at(n).at(m) += need-dx
+      lefts.at(i + 1).at(n).at(m) = lefts.at(i + 1).at(n).at(m).map(x => x + need-dx)
+      rights.at(i + 1).at(n).at(m) = rights.at(i + 1).at(n).at(m).map(x => x + need-dx)
+      left-right = rights.at(i + 1).at(n).at(m).zip(left-right).map(((a, b)) => calc.max(a, b))
+    }
+
+    // average the spacing of children
+    for m in range(1, tree.at(i + 1).at(n).len() - 1) {
+      let left-spacing = calc.max(..rights.at(i + 1).at(n).at(m - 1).zip(lefts.at(i + 1).at(n).at(m)).map(((a, b)) => a - b))
+      let right-spacing = calc.max(..rights.at(i + 1).at(n).at(m).zip(lefts.at(i + 1).at(n).at(m + 1)).map(((a, b)) => a - b))
+      let average-spacing = (left-spacing + right-spacing) / 2
+
+      let need-dx = left-spacing - average-spacing
+      if need-dx <= 0 {
+        continue
+      }
+      // calculate the left most positions of right subtrees after moving
+      let right-left-mosts = lefts.at(i + 1).at(n).slice(m + 1, tree.at(i + 1).at(n).len()).reduce((a, b) => a.zip(b).map(((x, y)) => calc.min(x, y)))
+
+      // check whether can move
+      if rights.at(i + 1).at(n).at(m).zip(right-left-mosts).map(((a, b)) => a + need-dx <= b).reduce((a, b) => a and b) {
         dxs.at(i + 1).at(n).at(m) += need-dx
         lefts.at(i + 1).at(n).at(m) = lefts.at(i + 1).at(n).at(m).map(x => x + need-dx)
         rights.at(i + 1).at(n).at(m) = rights.at(i + 1).at(n).at(m).map(x => x + need-dx)
-        left-right = rights.at(i + 1).at(n).at(m).zip(left-right).map(((a, b)) => calc.max(a, b))
       }
-
-      // average the spacing of children
-      for m in range(1, tree.at(i + 1).at(n).len() - 1) {
-        let left-spacing = calc.max(..rights.at(i + 1).at(n).at(m - 1).zip(lefts.at(i + 1).at(n).at(m)).map(((a, b)) => a - b))
-        let right-spacing = calc.max(..rights.at(i + 1).at(n).at(m).zip(lefts.at(i + 1).at(n).at(m + 1)).map(((a, b)) => a - b))
-        let average-spacing = (left-spacing + right-spacing) / 2
-
-        let need-dx = left-spacing - average-spacing
-        if need-dx <= 0 {
-          continue
-        }
-        // calculate the left most positions of right subtrees after moving
-        let right-left-mosts = lefts.at(i + 1).at(n).slice(m + 1, tree.at(i + 1).at(n).len()).reduce((a, b) => a.zip(b).map(((x, y)) => calc.min(x, y)))
-
-        // check whether can move
-        if rights.at(i + 1).at(n).at(m).zip(right-left-mosts).map(((a, b)) => a + need-dx <= b).reduce((a, b) => a and b) {
-          dxs.at(i + 1).at(n).at(m) += need-dx
-          lefts.at(i + 1).at(n).at(m) = lefts.at(i + 1).at(n).at(m).map(x => x + need-dx)
-          rights.at(i + 1).at(n).at(m) = rights.at(i + 1).at(n).at(m).map(x => x + need-dx)
-        }
-      }
-
-      // move subtrees align to the center
-      let children-xs = xs.at(i + 1).at(n).zip(dxs.at(i + 1).at(n)).map(((x, dx)) => x + dx)
-      let align-to = attrs.at(i).at(j).at(k).align-to
-      let children-dx-center = leafx - if align-to == "midpoint" {
-        (calc.max(..children-xs) + calc.min(..children-xs)) / 2
-      } else if align-to == "first" {
-        children-xs.at(0)
-      } else if align-to == "last" {
-        children-xs.at(children-xs.len() - 1)
-      } else if align-to == "middle" {
-        let mid = calc.floor(children-xs.len() / 2)
-        if calc.rem(children-xs.len(), 2) == 1 {
-          children-xs.at(mid)
-        } else {
-          (children-xs.at(mid - 1) + children-xs.at(mid)) / 2
-        }
-      } else if type(align-to) == int {
-        children-xs.at(align-to)
-      } else if type(align-to) == ratio {
-        children-xs.at(0) + float(align-to) * (children-xs.at(children-xs.len() - 1) - children-xs.at(0))
-      }
-      for m in range(0, tree.at(i + 1).at(n).len()) {
-        dxs.at(i + 1).at(n).at(m) += children-dx-center
-        lefts.at(i + 1).at(n).at(m) = lefts.at(i + 1).at(n).at(m).map(x => x + children-dx-center)
-        rights.at(i + 1).at(n).at(m) = rights.at(i + 1).at(n).at(m).map(x => x + children-dx-center)
-      }
-
-      // lefts are the leftest positions of every level of the left subtree
-      lefts.at(i).at(j).at(k) = lefts.at(i + 1).at(n).reduce((a, b) => a.zip(b).map(((x, y)) => calc.min(x, y)))
-      // rights are the rightest positions of every level of the right subtree
-      rights.at(i).at(j).at(k) = rights.at(i + 1).at(n).reduce((a, b) => a.zip(b).map(((x, y)) => calc.max(x, y)))
-      lefts.at(i).at(j).at(k).at(i) = leafx
-      rights.at(i).at(j).at(k).at(i) = leafx
     }
+
+    // move subtrees align to the center
+    let children-xs = xs.at(i + 1).at(n).zip(dxs.at(i + 1).at(n)).map(((x, dx)) => x + dx)
+    let align-to = attrs.at(i).at(j).at(k).align-to
+    let children-dx-center = leafx - if align-to == "midpoint" {
+      (calc.max(..children-xs) + calc.min(..children-xs)) / 2
+    } else if align-to == "first" {
+      children-xs.at(0)
+    } else if align-to == "last" {
+      children-xs.at(children-xs.len() - 1)
+    } else if align-to == "middle" {
+      let mid = calc.floor(children-xs.len() / 2)
+      if calc.rem(children-xs.len(), 2) == 1 {
+        children-xs.at(mid)
+      } else {
+        (children-xs.at(mid - 1) + children-xs.at(mid)) / 2
+      }
+    } else if type(align-to) == int {
+      children-xs.at(align-to)
+    } else if type(align-to) == ratio {
+      children-xs.at(0) + float(align-to) * (children-xs.at(children-xs.len() - 1) - children-xs.at(0))
+    }
+    for m in range(0, tree.at(i + 1).at(n).len()) {
+      dxs.at(i + 1).at(n).at(m) += children-dx-center
+      lefts.at(i + 1).at(n).at(m) = lefts.at(i + 1).at(n).at(m).map(x => x + children-dx-center)
+      rights.at(i + 1).at(n).at(m) = rights.at(i + 1).at(n).at(m).map(x => x + children-dx-center)
+    }
+
+    // lefts are the leftest positions of every level of the left subtree
+    lefts.at(i).at(j).at(k) = lefts.at(i + 1).at(n).reduce((a, b) => a.zip(b).map(((x, y)) => calc.min(x, y)))
+    // rights are the rightest positions of every level of the right subtree
+    rights.at(i).at(j).at(k) = rights.at(i + 1).at(n).reduce((a, b) => a.zip(b).map(((x, y)) => calc.max(x, y)))
+    lefts.at(i).at(j).at(k).at(i) = leafx
+    rights.at(i).at(j).at(k).at(i) = leafx
 
     // treat the subtree as a whole to avoid further compression
     let forest = i > 0 and attrs.at(i - 1).flatten().at(j).forest
