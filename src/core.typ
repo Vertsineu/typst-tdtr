@@ -506,7 +506,7 @@
       (xs, ys, body) = override(i, j, k, xs, ys, body)
 
       // calculate the rotated positions
-      let angle = - rotate / 180deg * calc.pi
+      let angle = - rotate.rad()
       let cx-sub = xs-sub.at(i).at(j).at(k)
       let cy-sub = ys-sub.at(i).at(j).at(k)
       let rotate(i, j, k, xs, ys, body) = {
