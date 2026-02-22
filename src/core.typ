@@ -421,9 +421,6 @@
   // calculate the vertical axis position of every node
   let ys = tree.map(level => level.map(nodes => nodes.map(_ => 0)))
 
-  // collect all node attributes
-  let attrs = tree
-
   // expand the tree horizontally and vertically
   let x = 0 // horizontal axis position of current leaf node
   let expand(i, j, k, xs, ys, x, body) = {
@@ -472,7 +469,7 @@
       return (xs, ys, dxs, dys, lefts, rights, body)
     }
 
-    let rotate = attrs.at(i).at(j).at(k).rotate
+    let rotate = tree.at(i).at(j).at(k).rotate
     // if rotate, treat the subtree as an independent subtree
     if rotate != 0deg {
       let tree = tree
@@ -581,7 +578,7 @@
 
     // move subtrees align to the center
     let children-xs = xs.at(i + 1).at(n).zip(dxs.at(i + 1).at(n)).map(((x, dx)) => x + dx)
-    let align-to = attrs.at(i).at(j).at(k).align-to
+    let align-to = tree.at(i).at(j).at(k).align-to
     let children-dx-center = leafx - if align-to == "midpoint" {
       (calc.max(..children-xs) + calc.min(..children-xs)) / 2
     } else if align-to == "first" {
@@ -614,8 +611,8 @@
     rights.at(i).at(j).at(k).at(i) = leafx
 
     // treat the subtree as a whole to avoid further compression
-    let forest = i > 0 and attrs.at(i - 1).flatten().at(j).forest
-    let fit = attrs.at(i).at(j).at(k).fit
+    let forest = i > 0 and tree.at(i - 1).flatten().at(j).forest
+    let fit = tree.at(i).at(j).at(k).fit
     
     // if forest, treat its children as if they have band fit
     if forest or fit == "band" {
