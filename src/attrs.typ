@@ -19,19 +19,23 @@
         - `"middle"`: align to the middle child (midpoint of the middle two if even number of children)
       - if a ratio specified, e.g. `25%`, align to that percentage point between the first and last child
     - `rotate`: rotate the subtree rooted at this node by the specified angle (counter-clockwise)
+    - `sink`: sink the subtree rooted at this node by the specified number of layers
+      - note: this argument must be a non-negative integer, and if the subtree sinks down too much as to exceed the original height of the tree, then nodes deeper than the original height will just be ignored which may cause overlapping but we have no better choice
   - output: metadata with node attributes
 */
 #let node-attr(
   forest: false,
   fit: "tight",
   align-to: "midpoint",
-  rotate: 0deg
+  rotate: 0deg,
+  sink: 0
 ) = {
   metadata((
     class: "node-attr",
     forest: forest,
     fit: fit,
     align-to: align-to,
-    rotate: rotate
+    rotate: rotate,
+    sink: sink
   ))
 }
