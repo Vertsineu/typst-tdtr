@@ -533,7 +533,7 @@
     // not leaf, not rotated, truly try to compress the subtree
     else {
       for (m, child) in tree.at(i + 1).at(n).enumerate() {
-        (xs, ys,dxs, dys, lefts, rights, body) = try-compress(i + 1, n, m, xs, ys, dxs, dys, lefts, rights, body)
+        (xs, ys, dxs, dys, lefts, rights, body) = try-compress(i + 1, n, m, xs, ys, dxs, dys, lefts, rights, body)
       }
 
       // from the first left subtree, continue to compact the right subtrees
@@ -654,7 +654,7 @@
     // if sink down too much, just give up and let it be,
     // since it may cause overlapping with other nodes,
     // but we have no better choice
-    for h in range(i + 1, i + sink) {
+    for h in range(i + 1, calc.min(i + sink, height)) {
       lefts.at(i).at(j).at(k).at(h) = 3 * x
       rights.at(i).at(j).at(k).at(h) = -3 * x
     }
@@ -848,6 +848,7 @@
   spacing: (6pt, 15pt),
   edge-corner-radius: none,
   wrapper: false,
+  require-body: false,
   ..args,
 ) = {
   // if for wrapper use, return the drawing functions directly
@@ -881,7 +882,10 @@
   let attrs = tidy-tree-attrs(tree, default-node-attr: default-node-attr)
 
   // calculate the coordinates of every node
-  let (xs, ys, _) = tidy-tree-coords(attrs, min-gap: min-gap, default-node-attr: default-node-attr)
+  let (xs, ys, body) = tidy-tree-coords(attrs, min-gap: min-gap, default-node-attr: default-node-attr)
+  if require-body {
+    return body
+  }
 
   // support node width and node height settings, which are not supported in `fletcher.diagram` directly
   let size-draw-node = tidy-tree-draws.size-draw-node.with(
