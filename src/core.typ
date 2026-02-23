@@ -550,8 +550,6 @@
         let right-child-left = right-left.at(calc.min(i + 1 + right-sink, height))
         let can-dx = left-child-right - right-child-left
         // restore for next iteration
-        rights.at(i + 1).at(n).at(m - 1).at(height) = -border
-        lefts.at(i + 1).at(n).at(m).at(height) = border
         left-right.at(height) = -border
         right-left.at(height) = border
 
@@ -565,23 +563,24 @@
 
       // average the spacing of children
       for m in range(1, tree.at(i + 1).at(n).len() - 1) {
-        let left-spacing = calc.max(..rights.at(i + 1).at(n).at(m - 1).zip(lefts.at(i + 1).at(n).at(m)).map(((a, b)) => a - b))
-        let right-spacing = calc.max(..rights.at(i + 1).at(n).at(m).zip(lefts.at(i + 1).at(n).at(m + 1)).map(((a, b)) => a - b))
-        let average-spacing = (left-spacing + right-spacing) / 2
+        // make sure the left child must not be at the right of the right child after average spacing
+        let left-sink = tree.at(i + 1).at(n).at(m - 1).sink
+        let right-sink = tree.at(i + 1).at(n).at(m).sink
+        let left-child-right = lefts.at(i + 1).at(n).at(m - 1).at(calc.min(i + 1 + left-sink, height))
+        let right-child-left = rights.at(i + 1).at(n).at(m).at(calc.min(i + 1 + right-sink, height))
+        let can-dx = left-child-right - right-child-left
 
-        let need-dx = left-spacing - average-spacing
+        let left-spacing = calc.min(..lefts.at(i + 1).at(n).at(m).zip(rights.at(i + 1).at(n).at(m - 1)).map(((a, b)) => a - b))
+        let right-spacing = calc.min(..lefts.at(i + 1).at(n).at(m + 1).zip(rights.at(i + 1).at(n).at(m)).map(((a, b)) => a - b))
+
+        let need-dx = -calc.max(can-dx, (left-spacing - right-spacing) / 2)
         if need-dx <= 0 {
           continue
         }
-        // calculate the left most positions of right subtrees after moving
-        let right-left-mosts = lefts.at(i + 1).at(n).slice(m + 1, tree.at(i + 1).at(n).len()).reduce((a, b) => a.zip(b).map(((x, y)) => calc.min(x, y)))
 
-        // check whether can move
-        if rights.at(i + 1).at(n).at(m).zip(right-left-mosts).map(((a, b)) => a + need-dx <= b).reduce((a, b) => a and b) {
-          dxs.at(i + 1).at(n).at(m) += need-dx
-          lefts.at(i + 1).at(n).at(m) = lefts.at(i + 1).at(n).at(m).map(x => x + need-dx)
-          rights.at(i + 1).at(n).at(m) = rights.at(i + 1).at(n).at(m).map(x => x + need-dx)
-        }
+        dxs.at(i + 1).at(n).at(m) += need-dx
+        lefts.at(i + 1).at(n).at(m) = lefts.at(i + 1).at(n).at(m).map(x => x + need-dx)
+        rights.at(i + 1).at(n).at(m) = rights.at(i + 1).at(n).at(m).map(x => x + need-dx)
       }
 
       // move subtrees align to the center
