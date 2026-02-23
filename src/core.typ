@@ -616,46 +616,46 @@
       rights.at(i).at(j).at(k) = rights.at(i + 1).at(n).reduce((a, b) => a.zip(b).map(((x, y)) => calc.max(x, y)))
       lefts.at(i).at(j).at(k).at(i) = leafx
       rights.at(i).at(j).at(k).at(i) = leafx
+    }
 
-      // treat the subtree as a whole to avoid further compression
-      let forest = i > 0 and tree.at(i - 1).flatten().at(j).forest
-      let fit = tree.at(i).at(j).at(k).fit
-      
-      // if forest, treat its children as if they have band fit
-      if forest or fit == "band" {
-        let left-most = calc.min(..lefts.at(i).at(j).at(k))
-        let right-most = calc.max(..rights.at(i).at(j).at(k))
+    // treat the subtree as a whole to avoid further compression
+    let forest = i > 0 and tree.at(i - 1).flatten().at(j).forest
+    let fit = tree.at(i).at(j).at(k).fit
+    
+    // if forest, treat its children as if they have band fit
+    if forest or fit == "band" {
+      let left-most = calc.min(..lefts.at(i).at(j).at(k))
+      let right-most = calc.max(..rights.at(i).at(j).at(k))
 
-        lefts.at(i).at(j).at(k) = lefts.at(i).at(j).at(k).map(_ => left-most)
-        rights.at(i).at(j).at(k) = rights.at(i).at(j).at(k).map(_ => right-most)
-      } else if fit == "rectangle" {
-        let left-most = calc.min(..lefts.at(i).at(j).at(k))
-        let right-most = calc.max(..rights.at(i).at(j).at(k))
+      lefts.at(i).at(j).at(k) = lefts.at(i).at(j).at(k).map(_ => left-most)
+      rights.at(i).at(j).at(k) = rights.at(i).at(j).at(k).map(_ => right-most)
+    } else if fit == "rectangle" {
+      let left-most = calc.min(..lefts.at(i).at(j).at(k))
+      let right-most = calc.max(..rights.at(i).at(j).at(k))
 
-        // unlike band, rectangle only reaches to the bottom of the subtree
-        // and the height is not infinite
-        let left-bottom = lefts.at(i).at(j).at(k).enumerate().find(((h, left-cur)) => left-cur == left-most).at(0)
-        let right-bottom = rights.at(i).at(j).at(k).enumerate().find(((h, right-cur)) => right-cur == right-most).at(0)
+      // unlike band, rectangle only reaches to the bottom of the subtree
+      // and the height is not infinite
+      let left-bottom = lefts.at(i).at(j).at(k).enumerate().find(((h, left-cur)) => left-cur == left-most).at(0)
+      let right-bottom = rights.at(i).at(j).at(k).enumerate().find(((h, right-cur)) => right-cur == right-most).at(0)
 
-        lefts.at(i).at(j).at(k) = lefts.at(i).at(j).at(k).enumerate().map(((h, left-cur)) => {
-          if h >= i and h < left-bottom {
-            left-most
-          } else {
-            left-cur
-          }
-        })
+      lefts.at(i).at(j).at(k) = lefts.at(i).at(j).at(k).enumerate().map(((h, left-cur)) => {
+        if h >= i and h < left-bottom {
+          left-most
+        } else {
+          left-cur
+        }
+      })
 
-        rights.at(i).at(j).at(k) = rights.at(i).at(j).at(k).enumerate().map(((h, right-cur)) => {
-          if h >= i and h < right-bottom {
-            right-most
-          } else {
-            right-cur
-          }
-        })
-      } else if fit == "tight" {
+      rights.at(i).at(j).at(k) = rights.at(i).at(j).at(k).enumerate().map(((h, right-cur)) => {
+        if h >= i and h < right-bottom {
+          right-most
+        } else {
+          right-cur
+        }
+      })
+    } else if fit == "tight" {
         // do nothing, default behavior
       }
-    }
 
     // after compression, we are able to consider whether this subtree needs to sink some levels,
     // since only at this time, the lefts and rights are well-calculated 
