@@ -1052,6 +1052,41 @@ where `rotate` specifies the rotation angle of the node, and the layout algorith
 
 where `sink` specifies how many levels the node will sink down, and the layout algorithm will arrange the node in a deeper level according to the sinkage, which is useful for drawing some specific trees, e.g., syntax trees in linguistics.
 
+Here is an example of syntax tree of sentence "The big dog barked at the mailman":
+
+![syntax-tree](docs/16-syntax-tree.svg)
+
+```typ
+#tidy-tree-graph(
+  draw-node: (stroke: none),
+  draw-edge: (
+    tidy-tree-draws.south-north-draw-edge,
+    (marks: "-")
+  )
+)[
+  #let sink(n) = node-attr(sink: n)
+  - S
+    - NP
+      - Det
+        - The #sink(2)
+      - Adj
+        - big #sink(2)
+      - N
+        - dog #sink(2)
+    - VP
+      - V
+        - barked #sink(2)
+      - PP
+        - P
+          - at #sink(1)
+        - NP
+          - Det
+            - the
+          - N
+            - mailman
+]
+```
+
 ## API Reference
 
 The main function provided by this package is `tidy-tree-graph`, which has the following signature:
