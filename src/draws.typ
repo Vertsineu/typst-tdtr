@@ -283,6 +283,16 @@
   )
 }
 
+/// draw an edge from the south of the from-node to the north of the to-node
+#let south-north-draw-edge = (from-node, to-node, edge-label) => {
+  (
+    vertices: (
+      (name: from-node.name, anchor: "south"), 
+      (name: to-node.name, anchor: "north")
+    ), 
+  )
+}
+
 /// **************************************
 /// additional draw functions
 /// **************************************
