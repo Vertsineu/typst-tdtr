@@ -1,4 +1,27 @@
-# [0.5.2](https://github.com/Vertsineu/typst-tdtr/compare/v0.5.1...v0.5.2) (2026-02-17)
+# [0.5.3](https://github.com/Vertsineu/typst-tdtr/compare/v0.5.2...v0.5.3) (2026-02-23)
+
+
+### Bug Fixes
+
+* **coords:** make sure average spacing do not cause right child on left of the left child ([5fb434c](https://github.com/Vertsineu/typst-tdtr/commit/5fb434c0f2f24d2c30720af1b393107aa0310acd))
+* sink down too much produces error ([81c4d87](https://github.com/Vertsineu/typst-tdtr/commit/81c4d87dd10d4383dafa4d8e2d8a99840a4a41b9))
+* treat rotated subtree truly as if it's a leaf node ([7e179ca](https://github.com/Vertsineu/typst-tdtr/commit/7e179ca7f7584193d0c7df9b4cd0d4a66ca387b5))
+
+
+### Features
+
+* **coords:** make sink align to forest macro ([a80e57d](https://github.com/Vertsineu/typst-tdtr/commit/a80e57d88e946494f0217b852766fc5a5be4e83c))
+* **draws:** add south north draw edge ([95bee96](https://github.com/Vertsineu/typst-tdtr/commit/95bee9625c2077505d9a24564a7576b61bbbe61e))
+* support sink down the subtree as the forest does ([7ddd7c4](https://github.com/Vertsineu/typst-tdtr/commit/7ddd7c4f31e1df9416846063c19e2c905848552c))
+
+
+### Reverts
+
+* **coords:** make fit option avaiable for leaf nodes ([e8e8d0c](https://github.com/Vertsineu/typst-tdtr/commit/e8e8d0cec56a1ccd457ff32e5c7aa9dfd9f858cc))
+
+
+
+## [0.5.2](https://github.com/Vertsineu/typst-tdtr/compare/v0.5.1...v0.5.2) (2026-02-17)
 
 
 ### Bug Fixes
