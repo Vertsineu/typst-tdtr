@@ -32,6 +32,9 @@ This package uses [fletcher](https://typst.app/universe/package/fletcher) to ren
       - [Other Pre-defined node/edge drawing functions](#other-pre-defined-nodeedge-drawing-functions)
     - [Additional drawing functions](#additional-drawing-functions)
     - [Layout Customization](#layout-customization)
+      - [Parent Alignment](#parent-alignment)
+      - [Subtree Rotation](#subtree-rotation)
+      - [Nodes Sinkage](#nodes-sinkage)
   - [API Reference](#api-reference)
 
 ## Getting Started
@@ -946,7 +949,11 @@ where the additional drawing function first finds all root nodes, namely nodes i
 
 By default, the package uses a simple algorithm to calculate the horizontal positions of nodes in the tree, which works well in most cases. However, in some cases, you may want to customize the layout of the tree more flexibly.
 
-To achieve this, you can set `node-attr` for the nodes using `#node-attr(...)`, which only affects the layout calculation of nodes, e.g.,
+To achieve this, you can set `node-attr` for the nodes using `#node-attr(...)`, which only affects the layout calculation of nodes.
+
+Here are some examples of layout customization using `node-attr`:
+
+#### Parent Alignment
 
 ![align-forest](docs/13-align-forest-tree.svg)
 
@@ -975,7 +982,7 @@ To achieve this, you can set `node-attr` for the nodes using `#node-attr(...)`, 
 
 where `forest: true` prevents horizontal compression of the trees in the forest (node `D` do not compress to the right of node `E`), and `align-to` specifies the child that the parent node should align to (node `C` aligns to the first child `F`, and node `G` aligns to the child `P` with index 2).
 
-Another example:
+#### Subtree Rotation
 
 ![rotated-tree](docs/14-rotated-tree.svg)
 
@@ -1018,6 +1025,32 @@ Another example:
 ```
 
 where `rotate` specifies the rotation angle of the node, and the layout algorithm will arrange the child nodes around the parent node according to the rotation angle.
+
+#### Nodes Sinkage
+
+![sinkage](docs/15-sink-tree.svg)
+
+```typ
+#tidy-tree-graph[
+  - DP
+    - D #node-attr(sink: 6)
+    - NP
+      - CP
+        - C #node-attr(sink: 4)
+        - TP
+          - vP
+            - v #node-attr(sink: 2)
+            - VP
+              - V'
+                - V
+                - DP
+              - DP #node-attr(sink: 1)
+          - T #node-attr(sink: 3)
+      - N #node-attr(sink: 5)
+]
+```
+
+where `sink` specifies how many levels the node will sink down, and the layout algorithm will arrange the node in a deeper level according to the sinkage, which is useful for drawing some specific trees, e.g., syntax trees in linguistics.
 
 ## API Reference
 
