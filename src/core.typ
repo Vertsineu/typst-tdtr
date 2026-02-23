@@ -453,10 +453,12 @@
   // try to compress the tree horizontally
   // also tackle rotation of subtrees
   let height = tree.len()
+  // big enough to make sure not hinder compression
+  let border = 3 * x
   let dxs = tree.map(level => level.map(nodes => nodes.map(_ => 0)))
   let dys = tree.map(level => level.map(nodes => nodes.map(_ => 0)))
-  let lefts = tree.map(level => level.map(nodes => nodes.map(_ => range(0, height).map(_ => 3 * x))))
-  let rights = tree.map(level => level.map(nodes => nodes.map(_ => range(0, height).map(_ => -3 * x))))
+  let lefts = tree.map(level => level.map(nodes => nodes.map(_ => range(0, height + 1).map(_ => border))))
+  let rights = tree.map(level => level.map(nodes => nodes.map(_ => range(0, height + 1).map(_ => -border))))
   let try-compress(i, j, k, xs, ys, dxs, dys, lefts, rights, body) = {
     let n = tree.at(i).slice(0, j).flatten().len() + k // number of nodes before current node in current level
     // initialize lefts and rights for current node
@@ -540,7 +542,21 @@
       let left-right = rights.at(i + 1).at(n).at(0)
       for m in range(1, tree.at(i + 1).at(n).len()) {
         let right-left = lefts.at(i + 1).at(n).at(m)
-        let need-dx = calc.max(..left-right.zip(right-left).map(((a, b)) => a + min-gap - b))
+
+        // make sure the left child must not be at the right of the right child after moving
+        let left-sink = tree.at(i + 1).at(n).at(m - 1).sink
+        let right-sink = tree.at(i + 1).at(n).at(m).sink
+        let left-child-right = left-right.at(calc.min(i + 1 + left-sink, height))
+        let right-child-left = right-left.at(calc.min(i + 1 + right-sink, height))
+        let can-dx = left-child-right - right-child-left
+        // restore for next iteration
+        rights.at(i + 1).at(n).at(m - 1).at(height) = -border
+        lefts.at(i + 1).at(n).at(m).at(height) = border
+        left-right.at(height) = -border
+        right-left.at(height) = border
+
+        let need-dx = calc.max(can-dx, ..left-right.zip(right-left).map(((a, b)) => a + min-gap - b))
+
         dxs.at(i + 1).at(n).at(m) += need-dx
         lefts.at(i + 1).at(n).at(m) = lefts.at(i + 1).at(n).at(m).map(x => x + need-dx)
         rights.at(i + 1).at(n).at(m) = rights.at(i + 1).at(n).at(m).map(x => x + need-dx)
@@ -651,13 +667,17 @@
       lefts.at(i).at(j).at(k).at(h) = lefts.at(i).at(j).at(k).at(h - sink)
       rights.at(i).at(j).at(k).at(h) = rights.at(i).at(j).at(k).at(h - sink)
     }
-    // if sink down too much, just give up and let it be,
-    // since it may cause overlapping with other nodes,
-    // but we have no better choice
-    for h in range(i + 1, calc.min(i + sink, height)) {
-      lefts.at(i).at(j).at(k).at(h) = 3 * x
-      rights.at(i).at(j).at(k).at(h) = -3 * x
+    // use calc.min to prevent out of range when sink down too much,
+    // although it should not happen since the tree height is limited 
+    // and the sink should be reasonable
+    for h in range(i, calc.min(i + sink, height)) {
+      lefts.at(i).at(j).at(k).at(h) = border
+      rights.at(i).at(j).at(k).at(h) = -border
     }
+    // if sink down too much, we need to put left and right of current node 
+    // to an additional position for compression usage of parent node
+    lefts.at(i).at(j).at(k).at(height) = leafx
+    rights.at(i).at(j).at(k).at(height) = leafx
 
     (xs, ys, dxs, dys, lefts, rights, body)
   }
