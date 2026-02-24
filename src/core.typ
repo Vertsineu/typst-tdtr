@@ -1,5 +1,5 @@
 #import "@preview/fletcher:0.5.8"
-#import "draws.typ" as tidy-tree-draws : *
+#import "draws.typ" as tidy-tree-draws: *
 #import "attrs.typ": *
 
 /*
@@ -39,7 +39,7 @@
       // fill in empty arrays until in bound
       let index = indices.at(0)
       for i in range(arr.len(), index + 1) {
-        arr = arr + ((), )
+        arr = arr + ((),)
       }
       arr.at(index) = array-set(arr.at(index), indices.slice(1), value)
     }
@@ -110,17 +110,20 @@
   let flatten-tree(tree, indices: ()) = {
     if type(tree) == dictionary {
       for (i, (title, tree)) in tree.pairs().enumerate() {
-        let indices = indices + (i, )
-        ((title: title, indices: indices), )
+        let indices = indices + (i,)
+        ((title: title, indices: indices),)
         flatten-tree(tree, indices: indices)
       }
     } else if type(tree) == array {
-      tree.enumerate().map(((i, child)) => {
-        let indices = indices + (i, )
-        ((title: child, indices: indices), )
-      }).flatten()
+      tree
+        .enumerate()
+        .map(((i, child)) => {
+          let indices = indices + (i,)
+          ((title: child, indices: indices),)
+        })
+        .flatten()
     } else {
-      ((title: tree, indices: indices + (0, )), )
+      ((title: tree, indices: indices + (0,)),)
     }
   }
   let tree = flatten-tree(tree)
@@ -166,10 +169,11 @@
 
     let is-list-item(child) = child.func() == std.list.item
     let is-enum-item(child) = child.func() == std.enum.item
-    body.children
+    body
+      .children
       .fold(([], ()), ((title, children), child) => {
         if is-list-item(child) {
-          (title, children + (collect-tree(child.body), ))
+          (title, children + (collect-tree(child.body),))
         } else if is-enum-item(child) {
           // leave out enum titles since they are for edge labels
           (title, children)
@@ -180,22 +184,19 @@
       .reduce((title, children) => (title: title, children: children))
   }
   let tree = collect-tree(body)
-  
+
   // flatten the tree structure to an array with indices
   let flatten-tree(tree, indices: ()) = {
     if (indices.len() != 0) {
-      ((title: tree.title, indices: indices, ),)
+      ((title: tree.title, indices: indices),)
     }
-    tree.children.enumerate()
-      .map(((i, child)) => 
-        flatten-tree(child, indices: indices + (i, )))
-      .flatten()
+    tree.children.enumerate().map(((i, child)) => flatten-tree(child, indices: indices + (i,))).flatten()
   }
   let tree = flatten-tree(tree)
-  
+
   // cast the flattened tree to three-dimensional array
   let tree = tidy-tree-from-array-with-indices(tree)
-  
+
   tree
 }
 
@@ -236,15 +237,15 @@
 */
 #let tidy-tree-normalize(tree) = {
   // convert simplified nodes to normalized nodes
-  tree = tree.map((level) => {
+  tree = tree.map(level => {
     level = if type(level) != array {
-      (level, )
+      (level,)
     } else {
       level
     }
     level.map(children => {
       if type(children) != array {
-        (children, )
+        (children,)
       } else {
         children
       }
@@ -276,7 +277,7 @@
       - see `tidy-tree-edges-from-list` for the format
 */
 #let tidy-tree-edges-empty(tree) = {
-  tree.map((level) => level.map((children) => children.map(_ => none)))
+  tree.map(level => level.map(children => children.map(_ => none)))
 }
 
 /*
@@ -335,11 +336,12 @@
 
     let is-list-item(child) = child.func() == std.list.item
     let is-enum-item(child) = child.func() == std.enum.item
-    body.children
+    body
+      .children
       .fold(((), none), ((children, title), child) => {
         if is-list-item(child) {
           // apply edge label from the nearest enum item
-          (children + (collect-tree-edges(child.body, title: title), ), none)
+          (children + (collect-tree-edges(child.body, title: title),), none)
         } else if is-enum-item(child) {
           // save enum title as edge label
           (children, child.body)
@@ -348,7 +350,7 @@
           (children, title)
         }
       })
-      .reduce((children, _, ) => (title: title, children: children))
+      .reduce((children, _) => (title: title, children: children))
   }
 
   let tree-edges = collect-tree-edges(body)
@@ -356,18 +358,15 @@
   // flatten the tree structure to an array with indices
   let flatten-tree-edges(tree, indices: ()) = {
     if (indices.len() != 0) {
-      ((title: tree.title, indices: indices, ),)
+      ((title: tree.title, indices: indices),)
     }
-    tree.children.enumerate()
-      .map(((i, child)) => 
-        flatten-tree-edges(child, indices: indices + (i, )))
-      .flatten()
+    tree.children.enumerate().map(((i, child)) => flatten-tree-edges(child, indices: indices + (i,))).flatten()
   }
   let tree-edges = flatten-tree-edges(tree-edges)
 
   // cast the flattened tree to three-dimensional array
   let tree-edges = tidy-tree-from-array-with-indices(tree-edges)
-  
+
   tree-edges
 }
 
@@ -412,7 +411,7 @@
       - `xs`: the same structure as `tree`, but each node is replaced by its horizontal axis position
       - `ys`: the same structure as `tree`, but each node is replaced by its vertical axis position
       - `body`: only for debug, never use it
-      
+
 */
 #let tidy-tree-coords(tree, root: (0, 0, 0), min-gap: 1, default-node-attr: node-attr(), body: []) = {
   let (ri, rj, rk) = root
@@ -425,7 +424,7 @@
   let x = 0 // horizontal axis position of current leaf node
   let expand(i, j, k, xs, ys, x, body) = {
     let n = tree.at(i).slice(0, j).flatten().len() + k // number of nodes before current node in current level
-    
+
     // check if this node is leaf
     if i + 1 < tree.len() and tree.at(i + 1).at(n).len() > 0 {
       // not leaf
@@ -469,12 +468,17 @@
     let rotate = tree.at(i).at(j).at(k).rotate
     if i + 1 >= tree.len() or tree.at(i + 1).at(n).len() == 0 {
       // leaf, do nothing
-    }
-    else if rotate != 0deg {
+    } else if rotate != 0deg {
       // if rotate, treat the subtree as an independent subtree
       let tree = tree
       tree.at(i).at(j).at(k).rotate = 0deg // mark as visited
-      let (xs-sub, ys-sub, body-sub) = tidy-tree-coords(tree, root: (i, j, k), min-gap: min-gap, default-node-attr: default-node-attr, body: body)
+      let (xs-sub, ys-sub, body-sub) = tidy-tree-coords(
+        tree,
+        root: (i, j, k),
+        min-gap: min-gap,
+        default-node-attr: default-node-attr,
+        body: body,
+      )
       body = body-sub
 
       // first move the subtree to root at (0, 0)
@@ -488,7 +492,7 @@
       let cy = ys.at(i).at(j).at(k)
       let override(i, j, k, xs, ys, body) = {
         let n = tree.at(i).slice(0, j).flatten().len() + k // number of nodes before current node in current level
-        
+
         // if not leaf, override children
         if i + 1 < tree.len() and tree.at(i + 1).at(n).len() > 0 {
           for (m, child) in tree.at(i + 1).at(n).enumerate() {
@@ -507,12 +511,12 @@
       (xs, ys, body) = override(i, j, k, xs, ys, body)
 
       // calculate the rotated positions
-      let angle = - rotate.rad()
+      let angle = -rotate.rad()
       let cx-sub = xs-sub.at(i).at(j).at(k)
       let cy-sub = ys-sub.at(i).at(j).at(k)
       let rotate(i, j, k, xs, ys, body) = {
         let n = tree.at(i).slice(0, j).flatten().len() + k // number of nodes before current node in current level
-        
+
         // if not leaf, rotate children
         if i + 1 < tree.len() and tree.at(i + 1).at(n).len() > 0 {
           for (m, child) in tree.at(i + 1).at(n).enumerate() {
@@ -531,8 +535,7 @@
         (xs, ys, body)
       }
       (xs, ys, body) = rotate(i, j, k, xs, ys, body)
-    } 
-    // not leaf, not rotated, truly try to compress the subtree
+    } // not leaf, not rotated, truly try to compress the subtree
     else {
       for (m, child) in tree.at(i + 1).at(n).enumerate() {
         (xs, ys, dxs, dys, lefts, rights, body) = try-compress(i + 1, n, m, xs, ys, dxs, dys, lefts, rights, body)
@@ -570,8 +573,12 @@
         let right-child-left = rights.at(i + 1).at(n).at(m).at(calc.min(i + 1 + right-sink, height))
         let can-dx = left-child-right - right-child-left
 
-        let left-spacing = calc.min(..lefts.at(i + 1).at(n).at(m).zip(rights.at(i + 1).at(n).at(m - 1)).map(((a, b)) => a - b))
-        let right-spacing = calc.min(..lefts.at(i + 1).at(n).at(m + 1).zip(rights.at(i + 1).at(n).at(m)).map(((a, b)) => a - b))
+        let left-spacing = calc.min(
+          ..lefts.at(i + 1).at(n).at(m).zip(rights.at(i + 1).at(n).at(m - 1)).map(((a, b)) => a - b),
+        )
+        let right-spacing = calc.min(
+          ..lefts.at(i + 1).at(n).at(m + 1).zip(rights.at(i + 1).at(n).at(m)).map(((a, b)) => a - b),
+        )
 
         let need-dx = -calc.max(can-dx, (left-spacing - right-spacing) / 2)
         if need-dx <= 0 {
@@ -586,24 +593,27 @@
       // move subtrees align to the center
       let children-xs = xs.at(i + 1).at(n).zip(dxs.at(i + 1).at(n)).map(((x, dx)) => x + dx)
       let align-to = tree.at(i).at(j).at(k).align-to
-      let children-dx-center = leafx - if align-to == "midpoint" {
-        (calc.max(..children-xs) + calc.min(..children-xs)) / 2
-      } else if align-to == "first" {
-        children-xs.at(0)
-      } else if align-to == "last" {
-        children-xs.at(children-xs.len() - 1)
-      } else if align-to == "middle" {
-        let mid = calc.floor(children-xs.len() / 2)
-        if calc.rem(children-xs.len(), 2) == 1 {
-          children-xs.at(mid)
-        } else {
-          (children-xs.at(mid - 1) + children-xs.at(mid)) / 2
-        }
-      } else if type(align-to) == int {
-        children-xs.at(align-to)
-      } else if type(align-to) == ratio {
-        children-xs.at(0) + float(align-to) * (children-xs.at(children-xs.len() - 1) - children-xs.at(0))
-      }
+      let children-dx-center = (
+        leafx
+          - if align-to == "midpoint" {
+            (calc.max(..children-xs) + calc.min(..children-xs)) / 2
+          } else if align-to == "first" {
+            children-xs.at(0)
+          } else if align-to == "last" {
+            children-xs.at(children-xs.len() - 1)
+          } else if align-to == "middle" {
+            let mid = calc.floor(children-xs.len() / 2)
+            if calc.rem(children-xs.len(), 2) == 1 {
+              children-xs.at(mid)
+            } else {
+              (children-xs.at(mid - 1) + children-xs.at(mid)) / 2
+            }
+          } else if type(align-to) == int {
+            children-xs.at(align-to)
+          } else if type(align-to) == ratio {
+            children-xs.at(0) + float(align-to) * (children-xs.at(children-xs.len() - 1) - children-xs.at(0))
+          }
+      )
       for m in range(0, tree.at(i + 1).at(n).len()) {
         dxs.at(i + 1).at(n).at(m) += children-dx-center
         lefts.at(i + 1).at(n).at(m) = lefts.at(i + 1).at(n).at(m).map(x => x + children-dx-center)
@@ -621,7 +631,7 @@
     // treat the subtree as a whole to avoid further compression
     let forest = i > 0 and tree.at(i - 1).flatten().at(j).forest
     let fit = tree.at(i).at(j).at(k).fit
-    
+
     // if forest, treat its children as if they have band fit
     if forest or fit == "band" {
       let left-most = calc.min(..lefts.at(i).at(j).at(k))
@@ -638,27 +648,37 @@
       let left-bottom = lefts.at(i).at(j).at(k).enumerate().find(((h, left-cur)) => left-cur == left-most).at(0)
       let right-bottom = rights.at(i).at(j).at(k).enumerate().find(((h, right-cur)) => right-cur == right-most).at(0)
 
-      lefts.at(i).at(j).at(k) = lefts.at(i).at(j).at(k).enumerate().map(((h, left-cur)) => {
-        if h >= i and h < left-bottom {
-          left-most
-        } else {
-          left-cur
-        }
-      })
+      lefts.at(i).at(j).at(k) = lefts
+        .at(i)
+        .at(j)
+        .at(k)
+        .enumerate()
+        .map(((h, left-cur)) => {
+          if h >= i and h < left-bottom {
+            left-most
+          } else {
+            left-cur
+          }
+        })
 
-      rights.at(i).at(j).at(k) = rights.at(i).at(j).at(k).enumerate().map(((h, right-cur)) => {
-        if h >= i and h < right-bottom {
-          right-most
-        } else {
-          right-cur
-        }
-      })
+      rights.at(i).at(j).at(k) = rights
+        .at(i)
+        .at(j)
+        .at(k)
+        .enumerate()
+        .map(((h, right-cur)) => {
+          if h >= i and h < right-bottom {
+            right-most
+          } else {
+            right-cur
+          }
+        })
     } else if fit == "tight" {
-        // do nothing, default behavior
-      }
+      // do nothing, default behavior
+    }
 
     // after compression, we are able to consider whether this subtree needs to sink some levels,
-    // since only at this time, the lefts and rights are well-calculated 
+    // since only at this time, the lefts and rights are well-calculated
     // and we can shift the subtree down and leave the compression for the parent node to handle
     let sink = tree.at(i).at(j).at(k).sink
     dys.at(i).at(j).at(k) += sink
@@ -667,13 +687,13 @@
       rights.at(i).at(j).at(k).at(h) = rights.at(i).at(j).at(k).at(h - sink)
     }
     // use calc.min to prevent out of range when sink down too much,
-    // although it should not happen since the tree height is limited 
+    // although it should not happen since the tree height is limited
     // and the sink should be reasonable
     for h in range(i, calc.min(i + sink, height)) {
       lefts.at(i).at(j).at(k).at(h) = border
       rights.at(i).at(j).at(k).at(h) = -border
     }
-    // if sink down too much, we need to put left and right of current node 
+    // if sink down too much, we need to put left and right of current node
     // to an additional position for compression usage of parent node
     lefts.at(i).at(j).at(k).at(height) = leafx
     rights.at(i).at(j).at(k).at(height) = leafx
@@ -685,13 +705,24 @@
   // apply compress for recursive dxs and dys
   let apply-compress(i, j, k, dxs, dys, xs, ys, dx, dy, body) = {
     let n = tree.at(i).slice(0, j).flatten().len() + k // number of nodes before current node in current level
-    
+
     // check if this node is leaf
     if i + 1 < tree.len() and tree.at(i + 1).at(n).len() > 0 {
       // not leaf
       let children = tree.at(i + 1).at(n)
       for (m, child) in children.enumerate() {
-        (xs, ys, body) = apply-compress(i + 1, n, m, dxs, dys, xs, ys, dx + dxs.at(i).at(j).at(k), dy + dys.at(i).at(j).at(k), body)
+        (xs, ys, body) = apply-compress(
+          i + 1,
+          n,
+          m,
+          dxs,
+          dys,
+          xs,
+          ys,
+          dx + dxs.at(i).at(j).at(k),
+          dy + dys.at(i).at(j).at(k),
+          body,
+        )
       }
     }
 
@@ -753,7 +784,7 @@
 #let tidy-tree-elements(tree, xs, ys, tree-edges, draw-node, draw-edge, compact: false) = {
   let elements = ()
   let nodes = ()
-  let parents = (none, ) * tree.at(0).len() // labels of parent nodes for current level
+  let parents = (none,) * tree.at(0).len() // labels of parent nodes for current level
   let label-count = 0
   let new-label(label-count) = {
     label("tree-label-" + str(label-count))
@@ -767,12 +798,13 @@
         let y = ys.at(i).at(j).at(k)
 
         let child-edge = tree-edges.at(i).at(j).at(k)
-        let child-label = new-label(label-count); label-count += 1
+        let child-label = new-label(label-count)
+        label-count += 1
         let child-pos = (i: i, j: j, k: k, x: x, y: y)
         let child-node = (
-          name: child-label, 
-          label: child, 
-          pos: child-pos
+          name: child-label,
+          label: child,
+          pos: child-pos,
         )
 
         // prevent overlapping nodes by drawing hidden nodes at left and right positions
@@ -781,14 +813,14 @@
           let child-pos-right = (i: i, j: j, k: k, x: calc.ceil(x), y: calc.ceil(y))
 
           let child-node-left = (
-            name: none, 
-            label: child, 
-            pos: child-pos-left
+            name: none,
+            label: child,
+            pos: child-pos-left,
           )
           let child-node-right = (
-            name: none, 
-            label: child, 
-            pos: child-pos-right
+            name: none,
+            label: child,
+            pos: child-pos-right,
           )
 
           elements.push(fletcher.hide(fletcher.node(..draw-node(child-node-left))))
@@ -800,7 +832,7 @@
         nodes.push(child-node)
         if parent-node != none {
           elements.push(
-            fletcher.edge(..draw-edge(parent-node, child-node, child-edge))
+            fletcher.edge(..draw-edge(parent-node, child-node, child-edge)),
           )
         }
 
@@ -813,7 +845,7 @@
 
   (elements, nodes)
 }
- 
+
 /*
   draw a tidy tree
   - input:
@@ -909,19 +941,19 @@
   // support node width and node height settings, which are not supported in `fletcher.diagram` directly
   let size-draw-node = tidy-tree-draws.size-draw-node.with(
     width: node-width,
-    height: node-height
+    height: node-height,
   )
 
   // compose multiple draw-node functions if needed
   let draw-node = tidy-tree-draws.sequential-draw-function(
     size-draw-node, // place size draw-node at the front to make it able to be overridden
     default-draw-node,
-    ..(draw-node, ).flatten()
+    ..(draw-node,).flatten(),
   )
   // compose multiple draw-edge functions if needed
   let draw-edge = tidy-tree-draws.sequential-draw-function(
     default-draw-edge,
-    ..(draw-edge, ).flatten()
+    ..(draw-edge,).flatten(),
   )
 
   // generate elements
@@ -939,13 +971,13 @@
   // compose multiple additional-draw functions if needed
   let additional-draw = tidy-tree-draws.sequential-draw-function(
     default-additional-draw,
-    ..(additional-draw, ).flatten()
+    ..(additional-draw,).flatten(),
   )
 
   // wrap element functions and pass it to addition draw
   let element-func = (
     node: fletcher.node,
-    edge: fletcher.edge
+    edge: fletcher.edge,
   )
 
   set text(size: text-size)
@@ -970,34 +1002,33 @@
   draw-node: none,
   draw-edge: none,
   additional-draw: none,
-  
-  ..args
+  ..args,
 ) = {
   // get the original drawing functions from tree-graph-fn
   let (draw-node-orig, draw-edge-orig, additional-draw-orig) = tree-graph-fn(
-    wrapper: true
+    wrapper: true,
   )[]
 
   tree-graph-fn.with(
     draw-node: tidy-tree-draws.sequential-draw-function(
       ..(
         draw-node-orig,
-        if draw-node != none { draw-node } else { () }
+        if draw-node != none { draw-node } else { () },
       ).flatten(),
     ),
     draw-edge: tidy-tree-draws.sequential-draw-function(
       ..(
-        draw-edge-orig, 
-        if draw-edge != none { draw-edge } else { () }
+        draw-edge-orig,
+        if draw-edge != none { draw-edge } else { () },
       ).flatten(),
     ),
     additional-draw: tidy-tree-draws.sequential-draw-function(
       ..(
-        additional-draw-orig, 
-        if additional-draw != none { additional-draw } else { () }
+        additional-draw-orig,
+        if additional-draw != none { additional-draw } else { () },
       ).flatten(),
     ),
 
-    ..args
+    ..args,
   )
 }

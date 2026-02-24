@@ -1,5 +1,5 @@
 /// pre-defined drawing functions for tidy tree
-#import "utils.typ" : collect-metadata, collect-label
+#import "utils.typ": collect-label, collect-metadata
 
 /// process the input draw-function to a valid draw-function
 #let shortcut-draw-function(draw-function) = {
@@ -37,10 +37,10 @@
 /// default function for drawing a node
 #let default-draw-node = ((name, label, pos)) => {
   (
-    pos: (pos.x, pos.y), 
-    label: [#label], 
-    name: name, 
-    shape: rect
+    pos: (pos.x, pos.y),
+    label: [#label],
+    name: name,
+    shape: rect,
   )
 }
 
@@ -63,7 +63,7 @@
     let draw-node = shortcut-draw-function(default)
     ret = arguments(..draw-node((name: name, label: label, pos: pos)))
   }
-  
+
   ret
 }
 
@@ -85,7 +85,7 @@
     let draw-node = shortcut-draw-function(default)
     ret = arguments(..draw-node((name: name, label: label, pos: pos)))
   }
-  
+
   ret
 }
 
@@ -93,21 +93,21 @@
 #let size-draw-node = ((name, label, pos), width: auto, height: auto) => {
   (
     width: width,
-    height: height
+    height: height,
   )
 }
 
 /// draw a node as a circle
 #let circle-draw-node = ((name, label, pos)) => {
   (
-    shape: circle
+    shape: circle,
   )
 }
 
 /// draw the tree in horizontal direction
 #let horizontal-draw-node = ((name, label, pos)) => {
   (
-    pos: (pos.i, pos.x)
+    pos: (pos.i, pos.x),
   )
 }
 
@@ -116,11 +116,11 @@
   if type(unit) == array {
     let (x-unit, y-unit, ..) = unit
     (
-      pos: (pos.x * x-unit, pos.y * -y-unit)
+      pos: (pos.x * x-unit, pos.y * -y-unit),
     )
   } else {
     (
-      pos: (pos.x * unit, pos.y * -unit)
+      pos: (pos.x * unit, pos.y * -unit),
     )
   }
 }
@@ -128,7 +128,7 @@
 /// draw a hidden node but affecting the layout
 #let hidden-draw-node = ((name, label, pos)) => {
   (
-    post: x => none
+    post: x => none,
   )
 }
 
@@ -139,26 +139,34 @@
 /// default function for drawing an edge
 #let default-draw-edge = (from-node, to-node, edge-label) => {
   (
-    vertices: (from-node.name, to-node.name), 
+    vertices: (from-node.name, to-node.name),
     marks: "-|>",
     label: [#edge-label],
-    label-wrapper: edge =>  {
+    label-wrapper: edge => {
       let size = measure(edge.label)
       if size.width <= 0pt and size.height <= 0pt {
         none
       } else {
         // default label style from fletcher
-        box(edge.label, inset: .2em, radius: .2em, fill: edge.label-fill) 
+        box(edge.label, inset: .2em, radius: .2em, fill: edge.label-fill)
       }
     },
     label-fill: white,
-    label-sep: 0pt, 
-    label-anchor: "center"
+    label-sep: 0pt,
+    label-anchor: "center",
   )
 }
 
 /// draw an edge with metadata matching
-#let metadata-match-draw-edge = (from-node, to-node, edge-label, from-matches: (:), to-matches: (:), matches: (:), default: (:)) => {
+#let metadata-match-draw-edge = (
+  from-node,
+  to-node,
+  edge-label,
+  from-matches: (:),
+  to-matches: (:),
+  matches: (:),
+  default: (:),
+) => {
   let ret = arguments()
   let matched = false
   let keys = matches.keys()
@@ -198,7 +206,15 @@
   ret
 }
 
-#let label-match-draw-edge = (from-node, to-node, edge-label, from-matches: (:), to-matches: (:), matches: (:), default: (:)) => {
+#let label-match-draw-edge = (
+  from-node,
+  to-node,
+  edge-label,
+  from-matches: (:),
+  to-matches: (:),
+  matches: (:),
+  default: (:),
+) => {
   let ret = arguments()
   let matched = false
   let keys = matches.keys()
@@ -250,9 +266,9 @@
   let middle-anchor = (from-anchor, 50%, to-anchor)
   if from-node.pos.x == to-node.pos.x {
     (
-      vertices: (from-anchor, to-anchor), 
+      vertices: (from-anchor, to-anchor),
       marks: "-|>",
-      label: edge-label
+      label: edge-label,
     )
   } else {
     (
@@ -260,10 +276,10 @@
         from-anchor,
         ((), "|-", middle-anchor),
         ((), "-|", to-anchor),
-        to-anchor
+        to-anchor,
       ),
       marks: "-|>",
-      label: edge-label
+      label: edge-label,
     )
   }
 }
@@ -271,15 +287,15 @@
 /// draw a hidden edge
 #let hidden-draw-edge = (from-node, to-node, edge-label) => {
   (
-    post: x => none
+    post: x => none,
   )
 }
 
 /// draw an edge with label on sides, not on the middle of the edge
 #let side-label-draw-edge = (from-node, to-node, edge-label, label-sep: 0.4em) => {
   (
-    label-anchor: auto, 
-    label-sep: label-sep
+    label-anchor: auto,
+    label-sep: label-sep,
   )
 }
 
@@ -287,9 +303,9 @@
 #let south-north-draw-edge = (from-node, to-node, edge-label) => {
   (
     vertices: (
-      (name: from-node.name, anchor: "south"), 
-      (name: to-node.name, anchor: "north")
-    ), 
+      (name: from-node.name, anchor: "south"),
+      (name: to-node.name, anchor: "north"),
+    ),
   )
 }
 

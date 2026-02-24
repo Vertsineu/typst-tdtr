@@ -28,7 +28,7 @@
   fit: "tight",
   align-to: "midpoint",
   rotate: 0deg,
-  sink: 0
+  sink: 0,
 ) = {
   metadata((
     class: "node-attr",
@@ -36,6 +36,6 @@
     fit: fit,
     align-to: align-to,
     rotate: rotate,
-    sink: sink
+    sink: sink,
   ))
 }

@@ -12,14 +12,13 @@
 
   if not label.has("children") {
     if label.func() == metadata {
-      return (label.value, )
+      return (label.value,)
     } else {
       return ()
     }
   }
 
-  label.children
-    .fold((), (acc, child) => acc + collect-metadata(child))
+  label.children.fold((), (acc, child) => acc + collect-metadata(child))
 }
 
 /*
@@ -35,10 +34,10 @@
   for (k, v) in label.fields() {
     if k == "children" {
       for child in v {
-        (..collect-label(child))
+        (..collect-label(child),)
       }
     } else if k == "label" {
-      (str(v), )
+      (str(v),)
     } else {
       collect-label(v)
     }
@@ -65,13 +64,19 @@
   let items = []
   let fields = body.fields()
   for (k, v) in fields {
-    items = items + list.item(text(fill: gray, [.] + emph(k)) + if k == "children" {
-      for child in v {
-        list-from-content(child)
-      }
-    } else {
-      list-from-content(v)
-    })
+    items = (
+      items
+        + list.item(
+          text(fill: gray, [.] + emph(k))
+            + if k == "children" {
+              for child in v {
+                list-from-content(child)
+              }
+            } else {
+              list-from-content(v)
+            },
+        )
+    )
   }
   root = root + list.item(text(fill: red)[#body.func()] + items)
 
