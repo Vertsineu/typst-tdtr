@@ -169,6 +169,8 @@
 
     let is-list-item(child) = child.func() == std.list.item
     let is-enum-item(child) = child.func() == std.enum.item
+    let is-term-item(child) = child.func() == std.terms.item
+
     body
       .children
       .fold(([], ()), ((title, children), child) => {
@@ -177,6 +179,10 @@
         } else if is-enum-item(child) {
           // leave out enum titles since they are for edge labels
           (title, children)
+        } else if is-term-item(child) {
+          // use description field as node title
+          // and leave out term field for edge label
+          (title, children + (collect-tree(child.description),))
         } else {
           (title + child, children)
         }
@@ -336,6 +342,8 @@
 
     let is-list-item(child) = child.func() == std.list.item
     let is-enum-item(child) = child.func() == std.enum.item
+    let is-term-item(child) = child.func() == std.terms.item
+
     body
       .children
       .fold(((), none), ((children, title), child) => {
@@ -345,6 +353,10 @@
         } else if is-enum-item(child) {
           // save enum title as edge label
           (children, child.body)
+        } else if is-term-item(child) {
+          // use term field as the edge label
+          // and description field for the child node
+          (children + (collect-tree-edges(child.description, title: child.term),), none)
         } else {
           // leave out other texts since they are for node titles
           (children, title)
