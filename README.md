@@ -152,6 +152,35 @@ Here is an example:
 
 where `spacing: (20pt, 20pt)` option specifies the horizontal and vertical spacing between nodes, and `node-inset: 4pt` option specifies the padding inside each node. They are passed to `fletcher.diagram` internally.
 
+Also, for edges with short labels, you can combine the edge label with the child node label into a term list item, e.g., the equivalent of the previous example can be written as:
+
+```typ
+#tidy-tree-graph(
+  spacing: (20pt, 20pt),
+  node-inset: 4pt
+)[
+  - $I_0$
+    / $E$: $I_1$
+      / $+$: $I_6$
+        / $T$: $I_9$
+          / $F$: $I_7$
+        / $F$: $I_3$
+        / $a$: $I_4$
+        / $b$: $I_5$
+    / $T$: $I_2$
+      / $F$: $I_7$
+        / $*$: $I_8$
+      / $a$: $I_4$
+      / $b$: $I_5$
+    / $F$: $I_3$
+      / $*$: $I_8$
+    / $a$: $I_4$
+    / $b$: $I_5$
+]
+```
+
+which looks more concise and clear, but it may not suitable for edges with long labels, and in this case, the previous way is more recommended for better readability.
+
 #### (extra) Horizontal Compression
 
 During the drawing of the tidy tree, the package compresses nodes horizontally by default to make the tree more compact.
