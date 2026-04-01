@@ -749,10 +749,10 @@
 
   // make sure the minimum x is 0
   let x-min = calc.min(..xs.flatten())
-  xs = xs.map(level => level.map(nodes => nodes.map(x => x - x-min)))
+  xs = xs.map(level => level.map(nodes => nodes.map(x => calc.round(x - x-min, digits: 6))))
   // make sure the minimum y is 0
   let y-min = calc.min(..ys.flatten())
-  ys = ys.map(level => level.map(nodes => nodes.map(y => y - y-min)))
+  ys = ys.map(level => level.map(nodes => nodes.map(y => calc.round(y - y-min, digits: 6))))
 
   (xs, ys, body)
 }
