@@ -891,6 +891,8 @@
     - `edge-corner-radius`: corner radius of the edge, default to none
     - `wrapper`: only for wrapper use, never set it manually
       - if true, will return the drawing functions directly instead of drawing the tree
+    - `require-body`: only for debug, never set it manually
+      - if true, will return debug information from `tidy-tree-coords` instead of drawing the tree
     - `..args`: other arguments for `fletcher.diagram`
   - output:
     - `ret`: a tidy tree drawing
