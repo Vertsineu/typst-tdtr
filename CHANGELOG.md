@@ -1,4 +1,13 @@
-# [0.5.4](https://github.com/Vertsineu/typst-tdtr/compare/v0.5.3...v0.5.4) (2026-03-05)
+# [0.5.5](https://github.com/Vertsineu/typst-tdtr/compare/v0.5.4...v0.5.5) (2026-04-09)
+
+
+### Bug Fixes
+
+* **coord:** floating-point precision issue for coordination, round to 1e-6 to solve this ([508f2f0](https://github.com/Vertsineu/typst-tdtr/commit/508f2f08d707e14be22560e1932272aad5c27068)), closes [#11](https://github.com/Vertsineu/typst-tdtr/issues/11)
+
+
+
+## [0.5.4](https://github.com/Vertsineu/typst-tdtr/compare/v0.5.3...v0.5.4) (2026-03-05)
 
 
 ### Features
