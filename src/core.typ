@@ -1,5 +1,6 @@
 #import "@preview/fletcher:0.5.8"
-#import "draws.typ" as tidy-tree-draws: *
+#import "draws.typ" as tidy-tree-draws
+#import "utils.typ": *
 #import "attrs.typ": *
 
 /*
@@ -961,12 +962,12 @@
   // compose multiple draw-node functions if needed
   let draw-node = tidy-tree-draws.sequential-draw-function(
     size-draw-node, // place size draw-node at the front to make it able to be overridden
-    default-draw-node,
+    tidy-tree-draws.default-draw-node,
     ..(draw-node,).flatten(),
   )
   // compose multiple draw-edge functions if needed
   let draw-edge = tidy-tree-draws.sequential-draw-function(
-    default-draw-edge,
+    tidy-tree-draws.default-draw-edge,
     ..(draw-edge,).flatten(),
   )
 
@@ -984,7 +985,7 @@
 
   // compose multiple additional-draw functions if needed
   let additional-draw = tidy-tree-draws.sequential-draw-function(
-    default-additional-draw,
+    tidy-tree-draws.default-additional-draw,
     ..(additional-draw,).flatten(),
   )
 
