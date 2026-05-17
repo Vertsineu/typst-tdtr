@@ -1139,7 +1139,7 @@ The main function provided by this package is `tidy-tree-graph`, which has the f
   compact: false,
 
   // the minimum relative gap while calculating the horizontal axis of nodes
-  // do NOT use it unless you know what you are doing
+  // DO NOT use it unless you know what you are doing
   min-gap: 1,
 
   default-node-attr: node-attr(), // see above
@@ -1156,6 +1156,10 @@ The main function provided by this package is `tidy-tree-graph`, which has the f
   // only used for tree-graph-wrapper,
   // please do not use it
   wrapper: false,
+
+  // only used for debug
+  // please do not use it
+  require-body: false,
 
   // passed to `fletcher.diagram`
   node-stroke: 0.25pt,
