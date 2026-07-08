@@ -4,6 +4,7 @@
 #show: scale.with(125%, reflow: true)
 
 #tidy-tree-graph(
+  draw-node: (defocus: 0), // set to 0 to force the edge starts exactly from south
   draw-edge: tidy-tree-draws.horizontal-vertical-draw-edge,
 )[
   - Hello
