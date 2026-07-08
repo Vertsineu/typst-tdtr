@@ -193,7 +193,7 @@ Here is an extreme example:
 
 ```typ
 #tidy-tree-graph(
-  draw-node: (defocus: 0), // set to 0 to force the edge starts exactly from south
+  draw-node: (defocus: 0), // set to 0 to force the edge to end exactly to north
   draw-edge: tidy-tree-draws.horizontal-vertical-draw-edge,
 )[
   - Hello
@@ -1090,7 +1090,7 @@ Here is an example of syntax tree of sentence "The big dog barked at the mailman
 #tidy-tree-graph(
   draw-node: (
     stroke: none,
-    defocus: 0 // set to 0 to force the edge starts exactly from south
+    defocus: 0 // set to 0 to force the edge to start exactly from south
   ),
   draw-edge: (
     tidy-tree-draws.south-north-draw-edge,
