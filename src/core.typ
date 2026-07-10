@@ -511,36 +511,9 @@
       )
       body = body-sub
 
-      // first move the subtree to root at (0, 0)
-      let rootx-sub = xs-sub.at(i).at(j).at(k)
-      let rooty-sub = ys-sub.at(i).at(j).at(k)
-      xs-sub = xs-sub.map(level => level.map(nodes => nodes.map(x => x - rootx-sub)))
-      ys-sub = ys-sub.map(level => level.map(nodes => nodes.map(y => y - rooty-sub)))
-
-      // then override the positions of the current subtree nodes
+      // apply rotation and move root to current node
       let cx = xs.at(i).at(j).at(k)
       let cy = ys.at(i).at(j).at(k)
-      let override(i, j, k, xs, ys, body) = {
-        let n = tree.at(i).slice(0, j).flatten().len() + k // number of nodes before current node in current level
-
-        // if not leaf, override children
-        if i + 1 < tree.len() and tree.at(i + 1).at(n).len() > 0 {
-          for (m, child) in tree.at(i + 1).at(n).enumerate() {
-            (xs, ys, body) = override(i + 1, n, m, xs, ys, body)
-          }
-        }
-
-        // override current node
-        let x-sub = xs-sub.at(i).at(j).at(k)
-        let y-sub = ys-sub.at(i).at(j).at(k)
-        xs.at(i).at(j).at(k) = x-sub + cx
-        ys.at(i).at(j).at(k) = y-sub + cy
-
-        (xs, ys, body)
-      }
-      (xs, ys, body) = override(i, j, k, xs, ys, body)
-
-      // calculate the rotated positions
       let angle = -rotate.rad()
       let cx-sub = xs-sub.at(i).at(j).at(k)
       let cy-sub = ys-sub.at(i).at(j).at(k)
@@ -559,8 +532,8 @@
         let y-sub = ys-sub.at(i).at(j).at(k)
         let x-rot = (x-sub - cx-sub) * calc.cos(angle) - (y-sub - cy-sub) * calc.sin(angle)
         let y-rot = (x-sub - cx-sub) * calc.sin(angle) + (y-sub - cy-sub) * calc.cos(angle)
-        xs.at(i).at(j).at(k) += x-rot - x-sub
-        ys.at(i).at(j).at(k) += y-rot - y-sub
+        xs.at(i).at(j).at(k) = cx + x-rot
+        ys.at(i).at(j).at(k) = cy + y-rot
 
         (xs, ys, body)
       }
@@ -568,7 +541,19 @@
     } // not leaf, not rotated, truly try to compress the subtree
     else {
       for (m, child) in tree.at(i + 1).at(n).enumerate() {
-        (xs, ys, dxs, dys, lefts, rights, body) = try-compress(i + 1, n, m, s + sink, xs, ys, dxs, dys, lefts, rights, body)
+        (xs, ys, dxs, dys, lefts, rights, body) = try-compress(
+          i + 1,
+          n,
+          m,
+          s + sink,
+          xs,
+          ys,
+          dxs,
+          dys,
+          lefts,
+          rights,
+          body,
+        )
       }
 
       // from the first left subtree, continue to compact the right subtrees
