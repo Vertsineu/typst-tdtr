@@ -1,4 +1,4 @@
-#import "@preview/tdtr:0.5.5": *
+#import "@preview/tdtr:0.5.6": *
 
 #set page(height: auto, width: auto, margin: 1em)
 #show: scale.with(125%, reflow: true)
@@ -6,7 +6,7 @@
 #tidy-tree-graph(
   draw-node: (
     stroke: none,
-    defocus: 0 // set to 0 to force the edge to start exactly from south
+    defocus: 0, // set to 0 to force the edge to start exactly from south
   ),
   draw-edge: (
     tidy-tree-draws.south-north-draw-edge,

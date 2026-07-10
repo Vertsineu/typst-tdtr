@@ -1,4 +1,18 @@
-# [0.5.5](https://github.com/Vertsineu/typst-tdtr/compare/v0.5.4...v0.5.5) (2026-04-09)
+# [0.5.6](https://github.com/Vertsineu/typst-tdtr/compare/v0.5.5...v) (2026-07-10)
+
+
+### Bug Fixes
+
+* set defocus to 0 to force the edge starts exacltly from south ([01742b2](https://github.com/Vertsineu/typst-tdtr/commit/01742b2817bd5350577aefd5c8410581c5a86f5b))
+
+
+### Features
+
+* support logic layer attribute for more convenient usage of node sinkage ([ff4311d](https://github.com/Vertsineu/typst-tdtr/commit/ff4311dc4d0eb8e42300bdc137892fd9c5c2cdad))
+
+
+
+## [0.5.5](https://github.com/Vertsineu/typst-tdtr/compare/v0.5.4...v0.5.5) (2026-04-09)
 
 
 ### Bug Fixes
