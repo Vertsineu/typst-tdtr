@@ -435,7 +435,8 @@
 
   // expand the tree horizontally and vertically
   let x = 0 // horizontal axis position of current leaf node
-  let expand(i, j, k, xs, ys, x, body) = {
+  let layers = (:) // depth of logic layers
+  let expand(i, j, k, xs, ys, x, layers, body) = {
     let n = tree.at(i).slice(0, j).flatten().len() + k // number of nodes before current node in current level
 
     // check if this node is leaf
@@ -443,7 +444,7 @@
       // not leaf
       let children = tree.at(i + 1).at(n)
       for (m, child) in children.enumerate() {
-        (xs, ys, x, body) = expand(i + 1, n, m, xs, ys, x, body)
+        (xs, ys, x, layers, body) = expand(i + 1, n, m, xs, ys, x, layers, body)
       }
       let children-xs = xs.at(i + 1).at(n)
       // xs.at(i).at(j).at(k) = children-xs.sum() / children-xs.len
@@ -457,9 +458,16 @@
     // set vertical position
     ys.at(i).at(j).at(k) = i
 
-    (xs, ys, x, body)
+    let layer = tree.at(i).at(j).at(k).layer
+    if layer != none {
+      // record the maximum depth of nodes in the logic layer as the depth of this layer
+      layers.insert(layer, calc.max(layers.at(layer, default: 0), i))
+    }
+
+    (xs, ys, x, layers, body)
   }
-  (xs, ys, x, body) = expand(ri, rj, rk, xs, ys, x, body)
+  (xs, ys, x, layers, body) = expand(ri, rj, rk, xs, ys, x, layers, body)
+
   // here, x is the width of the tree
 
   // try to compress the tree horizontally
@@ -471,12 +479,21 @@
   let dys = tree.map(level => level.map(nodes => nodes.map(_ => 0)))
   let lefts = tree.map(level => level.map(nodes => nodes.map(_ => range(0, height + 1).map(_ => border))))
   let rights = tree.map(level => level.map(nodes => nodes.map(_ => range(0, height + 1).map(_ => -border))))
-  let try-compress(i, j, k, xs, ys, dxs, dys, lefts, rights, body) = {
+  let try-compress(i, j, k, s, xs, ys, dxs, dys, lefts, rights, body) = {
     let n = tree.at(i).slice(0, j).flatten().len() + k // number of nodes before current node in current level
     // initialize lefts and rights for current node
     let leafx = xs.at(i).at(j).at(k)
     lefts.at(i).at(j).at(k).at(i) = leafx
     rights.at(i).at(j).at(k).at(i) = leafx
+
+    // to make sink calculation of nested logic layers work proper
+    // we should pass current depth of sinkage down to subtrees
+    let sink = tree.at(i).at(j).at(k).sink
+    let layer = tree.at(i).at(j).at(k).layer
+    if layer != none {
+      // nodes can continue to sink down based on logic layer
+      sink += layers.at(layer) - i - s
+    }
 
     let rotate = tree.at(i).at(j).at(k).rotate
     if i + 1 >= tree.len() or tree.at(i + 1).at(n).len() == 0 {
@@ -551,7 +568,7 @@
     } // not leaf, not rotated, truly try to compress the subtree
     else {
       for (m, child) in tree.at(i + 1).at(n).enumerate() {
-        (xs, ys, dxs, dys, lefts, rights, body) = try-compress(i + 1, n, m, xs, ys, dxs, dys, lefts, rights, body)
+        (xs, ys, dxs, dys, lefts, rights, body) = try-compress(i + 1, n, m, sink, xs, ys, dxs, dys, lefts, rights, body)
       }
 
       // from the first left subtree, continue to compact the right subtrees
@@ -693,7 +710,6 @@
     // after compression, we are able to consider whether this subtree needs to sink some levels,
     // since only at this time, the lefts and rights are well-calculated
     // and we can shift the subtree down and leave the compression for the parent node to handle
-    let sink = tree.at(i).at(j).at(k).sink
     dys.at(i).at(j).at(k) += sink
     for h in range(i + sink, height).rev() {
       lefts.at(i).at(j).at(k).at(h) = lefts.at(i).at(j).at(k).at(h - sink)
@@ -713,7 +729,7 @@
 
     (xs, ys, dxs, dys, lefts, rights, body)
   }
-  (xs, ys, dxs, dys, lefts, rights, body) = try-compress(ri, rj, rk, xs, ys, dxs, dys, lefts, rights, body)
+  (xs, ys, dxs, dys, lefts, rights, body) = try-compress(ri, rj, rk, 0, xs, ys, dxs, dys, lefts, rights, body)
 
   // apply compress for recursive dxs and dys
   let apply-compress(i, j, k, dxs, dys, xs, ys, dx, dy, body) = {

@@ -1118,8 +1118,82 @@ Here is an example of syntax tree of sentence "The big dog barked at the mailman
           - N
             - mailman
 ]
-
 ```
+
+Sometimes, for convenience, you can use `layer` attribute to eliminate tedious calculations of layer-to-layer differences.
+
+Here is a much more complex example of syntax tree of sentence "The old man with a walking stick suddenly realized that his dog had been chasing a squirrel in the park":
+
+![Syntax tree for the sentence The old man with a walking stick suddenly realized that his dog had been chasing a squirrel in the park](docs/17-syntax-tree-complex.svg)
+
+```typ
+#tidy-tree-graph(
+  draw-node: (stroke: none, defocus: 0),
+  draw-edge: (
+    tidy-tree-draws.south-north-draw-edge,
+    (marks: "-"),
+  ),
+  spacing: (0pt, 15pt),
+)[
+  #let leaf = node-attr(layer: "leaves")
+  - S
+    - NP #node-attr(forest: true)
+      - NP
+        - Det
+          - The #leaf
+        - Adj
+          - old #leaf
+        - N
+          - man #leaf
+      - PP
+        - P
+          - with #leaf
+        - NP
+          - Det
+            - a #leaf
+          - Adj
+            - walking #leaf
+          - N
+            - stick #leaf
+    - VP
+      - AdvP
+        - Adv
+          - suddenly #leaf
+      - V
+        - realized #leaf
+      - S'
+        - Comp
+          - that #leaf
+        - S
+          - NP
+            - Det
+              - his #leaf
+            - N
+              - dog #leaf
+          - VP
+            - Aux
+              - had #leaf
+            - Aux
+              - been #leaf
+            - V
+              - chasing #leaf
+            - NP
+              - Det
+                - a #leaf
+              - N
+                - squirrel #leaf
+            - PP
+              - P
+                - in #leaf
+              - NP
+                - Det
+                  - the #leaf
+                - N
+                  - park #leaf
+]
+```
+
+where all leaf nodes are in a logic layer whose name is `leaves`, and they are laid out in the same depth as expected, much more convenient than manually calculating the depth of sinkage of each leaf node.
 
 ## API Reference
 

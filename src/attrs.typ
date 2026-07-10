@@ -4,8 +4,8 @@
   create attributes for tree nodes
   - input:
     - `forest`: whether this node is the root of a forest
-      - if false (default), the children are fitted into `tight`
-      - if true, the children are fitted into `band`
+      - if `false` (default), the children are fitted into `tight`
+      - if `true`, the children are fitted into `band`
     - `fit`: how to calculate the bounding box of this subtree
       - `"tight"` (default): fit subtree tightly with its sibling subtrees
       - `"rectangle"`: fit children in a rectangle with width equal to the widest span of the subtree and height equal to the height of the subtree
@@ -21,7 +21,10 @@
     - `rotate`: rotate the subtree rooted at this node by the specified angle (counter-clockwise)
     - `sink`: sink the subtree rooted at this node by the specified number of layers
       - note: this argument must be a non-negative integer, and if the subtree sinks down too much as to exceed the original height of the tree, then nodes deeper than the original height will just be ignored which may cause overlapping but we have no better choice
-  - output: metadata with node attributes
+    - `layer`: specify the name of the logic layer to which the node belongs and all nodes within the same logic layer will be laid out on the same layer
+      - note: 
+        - default to `none`, which means this node doesn't belong to any logic layer
+        - logic layers of different rotated trees are independent, namely, if the `rotate` attribute of a node is set to non-zero values, the logic layers either only contain nodes in the rotated subtree or only contain nodes not in that, even if they have the same name.
 */
 #let node-attr(
   forest: false,
@@ -29,6 +32,7 @@
   align-to: "midpoint",
   rotate: 0deg,
   sink: 0,
+  layer: none,
 ) = {
   metadata((
     class: "node-attr",
@@ -37,5 +41,6 @@
     align-to: align-to,
     rotate: rotate,
     sink: sink,
+    layer: layer,
   ))
 }
