@@ -6,14 +6,15 @@ This package uses [fletcher](https://typst.app/universe/package/fletcher) to ren
 
 - [tdtr](#tdtr)
   - [Getting Started](#getting-started)
-    - [From list](#from-list)
+    - [From List](#from-list)
       - [Nodes only](#nodes-only)
       - [Nodes with Edges](#nodes-with-edges)
       - [(extra) Horizontal Compression](#extra-horizontal-compression)
-    - [From file](#from-file)
+    - [From File](#from-file)
       - [JSON](#json)
       - [YAML](#yaml)
       - [(extra) Forbidden Structure](#extra-forbidden-structure)
+    - [From Build](#from-build)
   - [Customization Examples](#customization-examples)
     - [Pre-defined graph drawing functions](#pre-defined-graph-drawing-functions)
       - [Binary/B-/Red-Black Tree](#binaryb-red-black-tree)
@@ -45,7 +46,7 @@ Import the package using:
 #import "@preview/tdtr:0.5.6" : *
 ```
 
-### From list
+### From List
 
 #### Nodes only
 
@@ -246,7 +247,7 @@ Here is an extreme example:
 
 where `draw-edge: tidy-tree-draws.horizontal-vertical-draw-edge` option specifies a pre-defined edge drawing function to draw edges in a horizontal-vertical manner.
 
-### From file
+### From File
 
 You can also draw import a tree from a file, supporting JSON and YAML formats, where every key and every value in the file represents a node in the tree.
 
@@ -336,6 +337,64 @@ app:
     B:
       - D  # this structure is supported
     ```
+
+### From Build
+
+Finally, you can also build a tree using build functions in `tidy-tree-builds` — an approach that is user-friendly for those who prefer scripted automation or drawing using `cetz`-like grammars.
+
+Here is the rewritten version of a previous example:
+
+![SLR item-set tree with labeled edges](docs/2-SLR-analysis.svg)
+
+```typ
+#tidy-tree-graph(
+  spacing: (20pt, 20pt),
+  node-inset: 4pt, {
+  import tidy-tree-builds: *
+
+  node[$I_0$]
+    edge[$E$]; node[$I_1$]
+      edge[$+$]; node[$I_6$]
+        edge[$T$]; node[$I_9$]
+          edge[$F$]; leaf[$I_7$]
+        up()
+        edge[$F$]; leaf[$I_3$]
+        edge[$a$]; node[$I_4$]; up();
+        edge[$b$]; node[$I_5$]; up();
+      up()
+    up()
+    edge[$T$]; node[$I_2$]
+      edge[$F$]; node[$I_7$]
+        edge[$*$]; leaf[$I_8$]
+      up()
+      edge[$a$]; leaf[$I_4$]
+      edge[$b$]; leaf[$I_5$]
+    up()
+    edge[$F$]; node[$I_3$]
+      edge[$*$]; leaf[$I_8$]
+    up()
+    edge[$a$]; leaf[$I_4$]
+    edge[$b$]; leaf[$I_5$]
+  up()
+})
+```
+
+where only three core functions are involved:
+
+- `node(body, attr: node-attr())`: create a new child node and move to this node
+- `edge(body)`: set content of the edge from current node to next node
+- `up()`: move back to the parent node
+
+and `leaf` is a shortcut of `node` + `up`.
+
+If you are familiar with tree-related algorithms, the process of building this tree is essentially a pre-order traversal. When you are building a tree, you can try to follow these rules:
+
+- `node` and `up` are always paired like `(` and `)`
+- subtrees rooted at a node are always in its `node`-`up` pair
+- if current node has no children, use `leaf` for brevity
+- `edge` should always be placed before the `node` it points to
+
+which are helpful to understand your tree.
 
 ## Customization Examples
 

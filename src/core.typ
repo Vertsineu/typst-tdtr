@@ -208,6 +208,50 @@
 }
 
 /*
+  convert build elements to a simplified tree
+  - input:
+    - `builds`: an ordered array of build elements
+      - e.g.
+        ```typ
+        import tidy-tree-builds: *
+
+        node[a]
+          leaf[b]
+          leaf[c]
+          node[d]
+            leaf[e]
+            leaf[f]
+          up()
+        up()
+        ```
+  - output:
+    - `ret`: a simplified tree represented by a three-dimensional array
+      - see `tidy-tree-normalize` for the format
+*/
+#let tidy-tree-from-builds(builds) = {
+  let tree = ()
+  let indices = ()
+  let cnt = 0
+  for b in builds.flatten().map(b => b.value) {
+    let class = b.class
+    if class == "builds-up" {
+      cnt = indices.pop() + 1
+    } else if class == "builds-edge" {
+      // leave out edges when building nodes
+    } else if class == "builds-node" {
+      indices.push(cnt)
+      cnt = 0
+      tree.push((indices: indices, title: b.body + b.attr))
+    }
+  }
+
+  // cast the flattened tree to three-dimensional array
+  let tree = tidy-tree-from-array-with-indices(tree)
+
+  tree
+}
+
+/*
   normalize a simplified tree to a normalized tree
   - input:
     - `tree`: a simplified tree represented by a three-dimensional array
@@ -381,6 +425,52 @@
   let tree-edges = tidy-tree-from-array-with-indices(tree-edges)
 
   tree-edges
+}
+
+/*
+  collect edge labels from build elements
+  - input:
+    - `builds`: an ordered array of build elements
+      - e.g.
+        ```typ
+          import tidy-tree-builds: *
+
+          node[a]
+            leaf[b]
+            edge[h]; leaf[c]
+            node[d]
+              edge[g]; leaf[e]
+              edge[l]; leaf[f]
+            up()
+          up()
+        ```
+  - output:
+    - `ret`: a simplified tree of edges represented by a three-dimensional array, if no edge label, use `none`
+      - see `tidy-tree-edges-from-list` for the format
+*/
+#let tidy-tree-edges-from-builds(builds) = {
+  let tree = ()
+  let indices = ()
+  let cnt = 0
+  let title = none
+  for b in builds.flatten().map(b => b.value) {
+    let class = b.class
+    if class == "builds-up" {
+      cnt = indices.pop() + 1
+    } else if class == "builds-edge" {
+      title = b.body
+    } else if class == "builds-node" {
+      indices.push(cnt)
+      cnt = 0
+      tree.push((indices: indices, title: title))
+      title = none
+    }
+  }
+
+  // cast the flattened tree to three-dimensional array
+  let tree = tidy-tree-from-array-with-indices(tree)
+
+  tree
 }
 
 /*
@@ -928,7 +1018,7 @@
   } else if type(body) == dictionary {
     tidy-tree-from-dict-with-arrays(body)
   } else if type(body) == array {
-    body
+    tidy-tree-from-builds(body)
   } else {
     panic("body must be a content with a list or enum, or a dictionary with arrays")
   }
@@ -938,6 +1028,8 @@
   // collect labels of edges if specified
   let tree-edges = if type(body) == content {
     tidy-tree-edges-from-list(body)
+  } else if type(body) == array {
+    tidy-tree-edges-from-builds(body)
   } else {
     // not supported yet for other types
     tidy-tree-edges-empty(tree)
