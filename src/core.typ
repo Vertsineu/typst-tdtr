@@ -945,7 +945,7 @@
   } else if type(body) == array {
     body
   } else {
-    error("body must be a content with a list or enum, or a dictionary with arrays")
+    panic("body must be a content with a list or enum, or a dictionary with arrays")
   }
   // cast a simplified tree into a normalized tree
   let tree = tidy-tree-normalize(tree)
