@@ -1,14 +1,22 @@
-# [0.5.6](https://github.com/Vertsineu/typst-tdtr/compare/v0.5.5...v) (2026-07-10)
+# [0.6.0](https://github.com/Vertsineu/typst-tdtr/compare/v0.5.5...v) (2026-07-10)
 
 
 ### Bug Fixes
 
+* fix wrong current sink pass down of nested layer ([03e8dc6](https://github.com/Vertsineu/typst-tdtr/commit/03e8dc6aae1d2c2fc9ea26d120b81e7707734b90))
 * set defocus to 0 to force the edge starts exacltly from south ([01742b2](https://github.com/Vertsineu/typst-tdtr/commit/01742b2817bd5350577aefd5c8410581c5a86f5b))
+* use panic instead of error as panic function ([22d337d](https://github.com/Vertsineu/typst-tdtr/commit/22d337dd13ddb0a4eb393e703baf61fbd2aa1c8d))
 
 
 ### Features
 
+* support building tree using cetz-like grammars ([342e1b4](https://github.com/Vertsineu/typst-tdtr/commit/342e1b4453fd3d80c10706a6af9398df71dfe72f))
 * support logic layer attribute for more convenient usage of node sinkage ([ff4311d](https://github.com/Vertsineu/typst-tdtr/commit/ff4311dc4d0eb8e42300bdc137892fd9c5c2cdad))
+
+
+### Performance Improvements
+
+* refactor rotation logic for better performance ([f28776c](https://github.com/Vertsineu/typst-tdtr/commit/f28776cb15ec2e9177532add90d9a0f8c107056b))
 
 
 

@@ -1,4 +1,4 @@
-#import "@preview/tdtr:0.5.6": *
+#import "@preview/tdtr:0.6.0": *
 
 #set page(height: auto, width: auto, margin: 1em)
 #show: scale.with(125%, reflow: true)
