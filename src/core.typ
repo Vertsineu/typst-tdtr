@@ -785,18 +785,21 @@
     // after compression, we are able to consider whether this subtree needs to sink some levels,
     // since only at this time, the lefts and rights are well-calculated
     // and we can shift the subtree down and leave the compression for the parent node to handle
-    dys.at(i).at(j).at(k) += sink
-    for h in range(i + sink, height).rev() {
-      lefts.at(i).at(j).at(k).at(h) = lefts.at(i).at(j).at(k).at(h - sink)
-      rights.at(i).at(j).at(k).at(h) = rights.at(i).at(j).at(k).at(h - sink)
+    if sink != 0 {
+      dys.at(i).at(j).at(k) += sink
+      for h in range(i + sink, height).rev() {
+        lefts.at(i).at(j).at(k).at(h) = lefts.at(i).at(j).at(k).at(h - sink)
+        rights.at(i).at(j).at(k).at(h) = rights.at(i).at(j).at(k).at(h - sink)
+      }
+      // use calc.min to prevent out of range when sink down too much,
+      // although it should not happen since the tree height is limited
+      // and the sink should be reasonable
+      for h in range(i, calc.min(i + sink, height)) {
+        lefts.at(i).at(j).at(k).at(h) = border
+        rights.at(i).at(j).at(k).at(h) = -border
+      }
     }
-    // use calc.min to prevent out of range when sink down too much,
-    // although it should not happen since the tree height is limited
-    // and the sink should be reasonable
-    for h in range(i, calc.min(i + sink, height)) {
-      lefts.at(i).at(j).at(k).at(h) = border
-      rights.at(i).at(j).at(k).at(h) = -border
-    }
+
     // if sink down too much, we need to put left and right of current node
     // to an additional position for compression usage of parent node
     lefts.at(i).at(j).at(k).at(height) = leafx
