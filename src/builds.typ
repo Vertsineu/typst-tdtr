@@ -29,4 +29,4 @@
 #let leaf(body, attr: node-attr()) = (
   node(body, attr: attr),
   up(),
-)
+).flatten()
