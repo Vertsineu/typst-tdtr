@@ -33,20 +33,6 @@
       - see `tidy-tree-normalize` for the format
 */
 #let tidy-tree-from-array-with-indices(arr) = {
-  let array-set(arr, indices, value) = {
-    if (indices.len() == 0) {
-      arr = value
-    } else {
-      // fill in empty arrays until in bound
-      let index = indices.at(0)
-      for i in range(arr.len(), index + 1) {
-        arr = arr + ((),)
-      }
-      arr.at(index) = array-set(arr.at(index), indices.slice(1), value)
-    }
-    arr
-  }
-
   let tree = ()
   for (indices, title) in arr {
     // i-th level
@@ -523,11 +509,25 @@
   // calculate the vertical axis position of every node
   let ys = tree.map(level => level.map(nodes => nodes.map(_ => 0)))
 
+  // a simple cache function to eliminate repeatedly calculating n
+  let get-n = (
+    () => {
+      let cache = ()
+      for (i, layer) in tree.enumerate() {
+        for (j, nodes) in tree.at(i).enumerate() {
+          cache = array-set(cache, (i, j), tree.at(i).slice(0, j).flatten().len())
+        }
+      }
+
+      (i, j, k) => cache.at(i).at(j) + k
+    }
+  )()
+
   // expand the tree horizontally and vertically
   let x = 0 // horizontal axis position of current leaf node
   let layers = (:) // depth of logic layers
   let expand(i, j, k, xs, ys, x, layers, body) = {
-    let n = tree.at(i).slice(0, j).flatten().len() + k // number of nodes before current node in current level
+    let n = get-n(i, j, k) // number of nodes before current node in current level
 
     // check if this node is leaf
     if i + 1 < tree.len() and tree.at(i + 1).at(n).len() > 0 {
@@ -570,7 +570,8 @@
   let lefts = tree.map(level => level.map(nodes => nodes.map(_ => range(0, height + 1).map(_ => border))))
   let rights = tree.map(level => level.map(nodes => nodes.map(_ => range(0, height + 1).map(_ => -border))))
   let try-compress(i, j, k, s, xs, ys, dxs, dys, lefts, rights, body) = {
-    let n = tree.at(i).slice(0, j).flatten().len() + k // number of nodes before current node in current level
+    let n = get-n(i, j, k) // number of nodes before current node in current level
+
     // initialize lefts and rights for current node
     let leafx = xs.at(i).at(j).at(k)
     lefts.at(i).at(j).at(k).at(i) = leafx
@@ -608,7 +609,7 @@
       let cx-sub = xs-sub.at(i).at(j).at(k)
       let cy-sub = ys-sub.at(i).at(j).at(k)
       let rotate(i, j, k, xs, ys, body) = {
-        let n = tree.at(i).slice(0, j).flatten().len() + k // number of nodes before current node in current level
+        let n = get-n(i, j, k) // number of nodes before current node in current level
 
         // if not leaf, rotate children
         if i + 1 < tree.len() and tree.at(i + 1).at(n).len() > 0 {
@@ -811,7 +812,7 @@
 
   // apply compress for recursive dxs and dys
   let apply-compress(i, j, k, dxs, dys, xs, ys, dx, dy, body) = {
-    let n = tree.at(i).slice(0, j).flatten().len() + k // number of nodes before current node in current level
+    let n = get-n(i, j, k) // number of nodes before current node in current level
 
     // check if this node is leaf
     if i + 1 < tree.len() and tree.at(i + 1).at(n).len() > 0 {

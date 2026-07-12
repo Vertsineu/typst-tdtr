@@ -82,3 +82,26 @@
 
   root
 }
+
+/*
+  array set function with auto filling empty arrays
+  - `input`:
+    - `arr`: input array to be set
+    - `indices`: an array of indices specifying the position to be set
+    - `value`: value to be set
+  - `output`:
+    - `ret`: output array having been set
+*/
+#let array-set(arr, indices, value) = {
+  if (indices.len() == 0) {
+    arr = value
+  } else {
+    // fill in empty arrays until in bound
+    let index = indices.at(0)
+    for i in range(arr.len(), index + 1) {
+      arr = arr + ((),)
+    }
+    arr.at(index) = array-set(arr.at(index), indices.slice(1), value)
+  }
+  arr
+}
