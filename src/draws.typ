@@ -315,3 +315,32 @@
 
 /// default function for drawing additional elements, i.e., no additional drawing
 #let default-additional-draw = (..) => ()
+
+/// draw additional edges from given edge
+#let label-match-additional-draw = (nodes, (node, edge), matches: (:)) => {
+  // construct mapping from label to node name
+  let map = nodes
+    .map(n => (collect-label(n.label), n))
+    .fold((:), (m, (labels, node)) => {
+      for label in labels {
+        m.insert(label, m.at(label, default: ()) + (node, ))
+      }
+      m
+    })
+
+  // construct edges connecting nodes with given labels
+  let edges = ()
+  for (k, draw-edge) in matches {
+    draw-edge = sequential-draw-function(
+      default-draw-edge, // apply default style to edge
+      draw-edge
+    )
+    for from-node in map.at(k + ".begin", default: ()) {
+      for to-node in map.at(k + ".end", default: ()) {
+        edges.push(edge(..draw-edge(from-node, to-node, none)))
+      }
+    }
+  }
+
+  edges
+}
