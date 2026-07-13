@@ -53,20 +53,21 @@
   for key in collect-metadata(label) {
     if keys.contains(key) {
       // support shortcut draw-node
-      let draw-node = shortcut-draw-function(matches.at(key))
+      let draw-node = sequential-draw-function(..(matches.at(key),).flatten())
       ret = arguments(..ret, ..draw-node((name: name, label: label, pos: pos)))
       matched = true
     }
   }
   // default case when no metadata matches
   if not matched {
-    let draw-node = shortcut-draw-function(default)
+    let draw-node = sequential-draw-function(..(default,).flatten())
     ret = arguments(..draw-node((name: name, label: label, pos: pos)))
   }
 
   ret
 }
 
+/// draw a node with label matching
 #let label-match-draw-node = ((name, label, pos), matches: (:), default: (:)) => {
   let ret = arguments()
   let matched = false
@@ -75,14 +76,14 @@
   for key in collect-label(label) {
     if keys.contains(key) {
       // support shortcut draw-node
-      let draw-node = shortcut-draw-function(matches.at(key))
+      let draw-node = sequential-draw-function(..(matches.at(key),).flatten())
       ret = arguments(..ret, ..draw-node((name: name, label: label, pos: pos)))
       matched = true
     }
   }
   // default case when no label matches
   if not matched {
-    let draw-node = shortcut-draw-function(default)
+    let draw-node = sequential-draw-function(..(default,).flatten())
     ret = arguments(..draw-node((name: name, label: label, pos: pos)))
   }
 
@@ -173,7 +174,7 @@
   // check whether any metadata in edge labels matches
   for key in collect-metadata(edge-label) {
     if keys.contains(key) {
-      let draw-edge = shortcut-draw-function(matches.at(key))
+      let draw-edge = sequential-draw-function(..(matches.at(key),).flatten())
       ret = arguments(..ret, ..draw-edge(from-node, to-node, edge-label))
       matched = true
     }
@@ -182,7 +183,7 @@
   // check whether any metadata in from node labels matches
   for key in collect-metadata(from-node.label) {
     if keys.contains(key) {
-      let draw-edge = shortcut-draw-function(from-matches.at(key))
+      let draw-edge = sequential-draw-function(..(from-matches.at(key),).flatten())
       ret = arguments(..ret, ..draw-edge(from-node, to-node, edge-label))
       matched = true
     }
@@ -191,7 +192,7 @@
   // check whether any metadata in to node labels matches
   for key in collect-metadata(to-node.label) {
     if keys.contains(key) {
-      let draw-edge = shortcut-draw-function(to-matches.at(key))
+      let draw-edge = sequential-draw-function(..(to-matches.at(key),).flatten())
       ret = arguments(..ret, ..draw-edge(from-node, to-node, edge-label))
       matched = true
     }
@@ -199,13 +200,14 @@
 
   // default case when no metadata matches
   if not matched {
-    let draw-edge = shortcut-draw-function(default)
+    let draw-edge = sequential-draw-function(..(default,).flatten())
     ret = arguments(..ret, ..draw-edge(from-node, to-node, edge-label))
   }
 
   ret
 }
 
+/// draw an edge with label matching
 #let label-match-draw-edge = (
   from-node,
   to-node,
@@ -221,7 +223,7 @@
   // check whether any label in edge labels matches
   for key in collect-label(edge-label) {
     if keys.contains(key) {
-      let draw-edge = shortcut-draw-function(matches.at(key))
+      let draw-edge = sequential-draw-function(..(matches.at(key),).flatten())
       ret = arguments(..ret, ..draw-edge(from-node, to-node, edge-label))
       matched = true
     }
@@ -230,7 +232,7 @@
   // check whether any label in from node labels matches
   for key in collect-label(from-node.label) {
     if keys.contains(key) {
-      let draw-edge = shortcut-draw-function(from-matches.at(key))
+      let draw-edge = sequential-draw-function(..(from-matches.at(key),).flatten())
       ret = arguments(..ret, ..draw-edge(from-node, to-node, edge-label))
       matched = true
     }
@@ -239,7 +241,7 @@
   // check whether any label in to node labels matches
   for key in collect-label(to-node.label) {
     if keys.contains(key) {
-      let draw-edge = shortcut-draw-function(to-matches.at(key))
+      let draw-edge = sequential-draw-function(..(to-matches.at(key),).flatten())
       ret = arguments(..ret, ..draw-edge(from-node, to-node, edge-label))
       matched = true
     }
@@ -247,7 +249,7 @@
 
   // default case when no label matches
   if not matched {
-    let draw-edge = shortcut-draw-function(default)
+    let draw-edge = sequential-draw-function(..(default,).flatten())
     ret = arguments(..ret, ..draw-edge(from-node, to-node, edge-label))
   }
 
@@ -316,14 +318,14 @@
 /// default function for drawing additional elements, i.e., no additional drawing
 #let default-additional-draw = (..) => ()
 
-/// draw additional edges from given edge
+/// draw additional edges from given edge with label matching
 #let label-match-additional-draw = (nodes, (node, edge), matches: (:)) => {
   // construct mapping from label to node name
   let map = nodes
     .map(n => (collect-label(n.label), n))
     .fold((:), (m, (labels, node)) => {
       for label in labels {
-        m.insert(label, m.at(label, default: ()) + (node, ))
+        m.insert(label, m.at(label, default: ()) + (node,))
       }
       m
     })
@@ -333,7 +335,7 @@
   for (k, draw-edge) in matches {
     draw-edge = sequential-draw-function(
       default-draw-edge, // apply default style to edge
-      draw-edge
+      ..(draw-edge,).flatten(),
     )
     for from-node in map.at(k + ".begin", default: ()) {
       for to-node in map.at(k + ".end", default: ()) {
