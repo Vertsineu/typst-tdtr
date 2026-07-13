@@ -1,4 +1,26 @@
-# [0.6.0](https://github.com/Vertsineu/typst-tdtr/compare/v0.5.5...v) (2026-07-10)
+# [0.6.1](https://github.com/Vertsineu/typst-tdtr/compare/v0.6.0...v) (2026-07-13)
+
+
+### Bug Fixes
+
+* allow non content value in build function ([126fce9](https://github.com/Vertsineu/typst-tdtr/commit/126fce94d4cc422e148320749233bd1a371ae169))
+
+
+### Features
+
+* add label match additional draw function ([50ff4dc](https://github.com/Vertsineu/typst-tdtr/commit/50ff4dcba02145040dd218e704591604226fbc95))
+* export fletcher for better customization ([b823af0](https://github.com/Vertsineu/typst-tdtr/commit/b823af08311775fd5b713582526cacd9846077f8))
+* support metadata match additional draw function ([4715821](https://github.com/Vertsineu/typst-tdtr/commit/4715821c29bd6ccf9276c96cc5c149c8ab0ed8b9))
+
+
+### Performance Improvements
+
+* cache n to eliminate calculation ([6dbe578](https://github.com/Vertsineu/typst-tdtr/commit/6dbe578e137c09a0b09a502a47adc5f575dc4850))
+* **coords:** if sink == 0, do not loop to move lefts and rights ([1448adf](https://github.com/Vertsineu/typst-tdtr/commit/1448adfe49bdc6a01053579010ff31a4d522bcac))
+
+
+
+# [0.6.0](https://github.com/Vertsineu/typst-tdtr/compare/v0.5.5...v0.6.0) (2026-07-10)
 
 
 ### Bug Fixes
