@@ -1034,6 +1034,64 @@ For example, in the pre-defined fibonacci heap graph drawing function, we use an
 
 where the additional drawing function first finds all root nodes, namely nodes in level 1, then connects every two adjacent root nodes using a dashed edge.
 
+Also, we provide pre-defined label/metadata match additional drawing functions for drawing additional edges.
+
+Here is an example rewritten from an official example of fletcher:
+
+![An example rewritten from Fletcher official example ](docs/18-fletcher-example.svg)
+
+```typ
+#tidy-tree-graph(
+  draw-edge: (
+    tidy-tree-draws.horizontal-vertical-draw-edge,
+    tidy-tree-draws.label-match-draw-edge.with(
+      to-matches: (
+        except: (marks: "1!-n!"),
+      ),
+      default: (marks: "1!-n?"),
+    ),
+  ),
+  additional-draw: (
+    tidy-tree-draws.metadata-match-additional-draw.with(
+      matches: (
+        snap: (
+          tidy-tree-draws.side-label-draw-edge.with(label-sep: 0.25em),
+          (
+            stroke: teal,
+            label: text(teal)[snap],
+            label-side: left,
+          ),
+        ),
+        layout: (
+          tidy-tree-draws.side-label-draw-edge.with(label-sep: 0.25em),
+          (from-node, to-node, _) => (
+            vertices: (
+              (rel: (-10pt, 0pt), to: from-node.name),
+              to-node.name,
+            ),
+            bend: 40deg,
+            stroke: orange,
+            label: text(orange)[layout],
+            label-angle: auto,
+          ),
+        ),
+      ),
+    )
+  ),
+  spacing: (4em, 3em),
+  node-stroke: luma(80%),
+  node-inset: .6em,
+  edge-corner-radius: 2.5pt,
+)[
+  - *Diagram* #metadata("layout.end")
+    - *Node* <except> #metadata("snap.end") #metadata("layout.begin")
+    - *Edge* #metadata("snap.begin")
+      - *Mark*
+]
+```
+
+where labels of additional edges are specified explicitly by `label` argument and beginning and ending of additional edges are specified by match label/metadata + `.begin`/`.end`.
+
 ### Layout Customization
 
 By default, the package uses a simple algorithm to calculate the horizontal positions of nodes in the tree, which works well in most cases. However, in some cases, you may want to customize the layout of the tree more flexibly.
